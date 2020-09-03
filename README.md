@@ -1,2 +1,11 @@
-_go generate ./ent_
-_go generate ./graph_
+```bash
+go generate ./ent
+```
+
+```bash
+go generate ./graph
+```
+
+```bash
+air
+```

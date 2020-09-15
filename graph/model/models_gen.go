@@ -2,35 +2,9 @@
 
 package model
 
-import (
-	"github.com/francismarcus/entgql/ent"
-)
-
-type PageInfo struct {
-	HasNextPage     bool    `json:"hasNextPage"`
-	HasPreviousPage bool    `json:"hasPreviousPage"`
-	StartCursor     *string `json:"startCursor"`
-	EndCursor       *string `json:"endCursor"`
-}
-
-type ProgramConnection struct {
-	PageInfo *PageInfo      `json:"pageInfo"`
-	Edges    []*ProgramEdge `json:"edges"`
-}
-
-type ProgramEdge struct {
-	Node   *ent.Program `json:"node"`
-	Cursor *string      `json:"cursor"`
-}
-
-type UserConnection struct {
-	PageInfo *PageInfo   `json:"pageInfo"`
-	Edges    []*UserEdge `json:"edges"`
-}
-
-type UserEdge struct {
-	Node   *ent.User `json:"node"`
-	Cursor *string   `json:"cursor"`
+type CreateProgramInput struct {
+	Name    string `json:"name"`
+	Creator int    `json:"creator"`
 }
 
 type CreateUserInput struct {

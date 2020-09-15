@@ -14,7 +14,7 @@ type PageInfo {
 type User implements Node {
   id: ID!
   username: String
-  programs: ProgramConnection
+  programs(after: Cursor, first: Int, before: Cursor, last: Int): ProgramConnection
 }
 
 type UserEdge {
@@ -46,11 +46,18 @@ input createUserInput {
   username: String!
 }
 
+
+input createProgramInput {
+  name: String!
+  creator: ID!
+}
+
 type Query {
   node(id: ID!): Node
-  todos(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
+  users(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
 }
 
 type Mutation {
   createUser(input: createUserInput!): User!
+  createProgram(input: createProgramInput!): Program!
 }

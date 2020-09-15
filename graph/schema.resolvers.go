@@ -15,7 +15,7 @@ import (
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*ent.User, error) {
-	u, err := r.client.User.
+	u, err := r.Client.User.
 		Create().
 		SetUsername("francismarcus").
 		Save(ctx)
@@ -26,8 +26,21 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 	return u, nil
 }
 
+func (r *mutationResolver) CreateProgram(ctx context.Context, input model.CreateProgramInput) (*ent.Program, error) {
+	p, err := r.Client.Program.Create().
+		SetName(input.Name).
+		SetCreatorID(input.Creator).
+		Save(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed creating program: %v", err)
+	}
+
+	return p, nil
+}
+
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
-	node, err := r.client.Noder(ctx, id)
+	node, err := r.Client.Noder(ctx, id)
 	if err == nil {
 		return node, nil
 	}
@@ -38,12 +51,15 @@ func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
 	return nil, err
 }
 
-func (r *queryResolver) Todos(ctx context.Context, after *string, first *int, before *string, last *int) (*model.UserConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.UserConnection, error) {
+	return r.Client.User.Query().
+		WithPrograms().
+		Paginate(ctx, after, first, before, last)
 }
 
-func (r *userResolver) Programs(ctx context.Context, obj *ent.User) (*model.ProgramConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *userResolver) Programs(ctx context.Context, obj *ent.User, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.ProgramConnection, error) {
+	return obj.QueryPrograms().Paginate(ctx, after, first, before, last)
+
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -1,3 +1,3 @@
 package ent
 
-//go:generate go run github.com/facebook/ent/cmd/entc generate --template ./template/node.tmpl ./schema
+//go:generate go run github.com/facebook/ent/cmd/entc generate --template ./template ./schema

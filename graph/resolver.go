@@ -12,5 +12,5 @@ import (
 
 // Resolver has client from ent
 type Resolver struct {
-	Client *ent.Client
+	client *ent.Client
 }

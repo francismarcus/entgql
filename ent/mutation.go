@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/francismarcus/entgql/ent/program"
 	"github.com/francismarcus/entgql/ent/user"
 
 	"github.com/facebook/ent"
@@ -21,20 +22,385 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeUser = "User"
+	TypeProgram = "Program"
+	TypeUser    = "User"
 )
+
+// ProgramMutation represents an operation that mutate the Programs
+// nodes in the graph.
+type ProgramMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	name           *string
+	clearedFields  map[string]struct{}
+	creator        *int
+	clearedcreator bool
+	done           bool
+	oldValue       func(context.Context) (*Program, error)
+}
+
+var _ ent.Mutation = (*ProgramMutation)(nil)
+
+// programOption allows to manage the mutation configuration using functional options.
+type programOption func(*ProgramMutation)
+
+// newProgramMutation creates new mutation for $n.Name.
+func newProgramMutation(c config, op Op, opts ...programOption) *ProgramMutation {
+	m := &ProgramMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeProgram,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withProgramID sets the id field of the mutation.
+func withProgramID(id int) programOption {
+	return func(m *ProgramMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Program
+		)
+		m.oldValue = func(ctx context.Context) (*Program, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Program.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withProgram sets the old Program of the mutation.
+func withProgram(node *Program) programOption {
+	return func(m *ProgramMutation) {
+		m.oldValue = func(context.Context) (*Program, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ProgramMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ProgramMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the id value in the mutation. Note that, the id
+// is available only if it was provided to the builder.
+func (m *ProgramMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetName sets the name field.
+func (m *ProgramMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the name value in the mutation.
+func (m *ProgramMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old name value of the Program.
+// If the Program object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ProgramMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldName is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName reset all changes of the "name" field.
+func (m *ProgramMutation) ResetName() {
+	m.name = nil
+}
+
+// SetCreatorID sets the creator edge to User by id.
+func (m *ProgramMutation) SetCreatorID(id int) {
+	m.creator = &id
+}
+
+// ClearCreator clears the creator edge to User.
+func (m *ProgramMutation) ClearCreator() {
+	m.clearedcreator = true
+}
+
+// CreatorCleared returns if the edge creator was cleared.
+func (m *ProgramMutation) CreatorCleared() bool {
+	return m.clearedcreator
+}
+
+// CreatorID returns the creator id in the mutation.
+func (m *ProgramMutation) CreatorID() (id int, exists bool) {
+	if m.creator != nil {
+		return *m.creator, true
+	}
+	return
+}
+
+// CreatorIDs returns the creator ids in the mutation.
+// Note that ids always returns len(ids) <= 1 for unique edges, and you should use
+// CreatorID instead. It exists only for internal usage by the builders.
+func (m *ProgramMutation) CreatorIDs() (ids []int) {
+	if id := m.creator; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCreator reset all changes of the "creator" edge.
+func (m *ProgramMutation) ResetCreator() {
+	m.creator = nil
+	m.clearedcreator = false
+}
+
+// Op returns the operation name.
+func (m *ProgramMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Program).
+func (m *ProgramMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during
+// this mutation. Note that, in order to get all numeric
+// fields that were in/decremented, call AddedFields().
+func (m *ProgramMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.name != nil {
+		fields = append(fields, program.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name.
+// The second boolean value indicates that this field was
+// not set, or was not define in the schema.
+func (m *ProgramMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case program.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *ProgramMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case program.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown Program field %s", name)
+}
+
+// SetField sets the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *ProgramMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case program.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Program field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented
+// or decremented during this mutation.
+func (m *ProgramMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was in/decremented
+// from a field with the given name. The second value indicates
+// that this field was not set, or was not define in the schema.
+func (m *ProgramMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *ProgramMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Program numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared
+// during this mutation.
+func (m *ProgramMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicates if this field was
+// cleared in this mutation.
+func (m *ProgramMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value for the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ProgramMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Program nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation regarding the
+// given field name. It returns an error if the field is not
+// defined in the schema.
+func (m *ProgramMutation) ResetField(name string) error {
+	switch name {
+	case program.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown Program field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this
+// mutation.
+func (m *ProgramMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.creator != nil {
+		edges = append(edges, program.EdgeCreator)
+	}
+	return edges
+}
+
+// AddedIDs returns all ids (to other nodes) that were added for
+// the given edge name.
+func (m *ProgramMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case program.EdgeCreator:
+		if id := m.creator; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this
+// mutation.
+func (m *ProgramMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all ids (to other nodes) that were removed for
+// the given edge name.
+func (m *ProgramMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this
+// mutation.
+func (m *ProgramMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedcreator {
+		edges = append(edges, program.EdgeCreator)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean indicates if this edge was
+// cleared in this mutation.
+func (m *ProgramMutation) EdgeCleared(name string) bool {
+	switch name {
+	case program.EdgeCreator:
+		return m.clearedcreator
+	}
+	return false
+}
+
+// ClearEdge clears the value for the given name. It returns an
+// error if the edge name is not defined in the schema.
+func (m *ProgramMutation) ClearEdge(name string) error {
+	switch name {
+	case program.EdgeCreator:
+		m.ClearCreator()
+		return nil
+	}
+	return fmt.Errorf("unknown Program unique edge %s", name)
+}
+
+// ResetEdge resets all changes in the mutation regarding the
+// given edge name. It returns an error if the edge is not
+// defined in the schema.
+func (m *ProgramMutation) ResetEdge(name string) error {
+	switch name {
+	case program.EdgeCreator:
+		m.ResetCreator()
+		return nil
+	}
+	return fmt.Errorf("unknown Program edge %s", name)
+}
 
 // UserMutation represents an operation that mutate the Users
 // nodes in the graph.
 type UserMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	username      *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*User, error)
+	op              Op
+	typ             string
+	id              *int
+	username        *string
+	clearedFields   map[string]struct{}
+	programs        map[int]struct{}
+	removedprograms map[int]struct{}
+	done            bool
+	oldValue        func(context.Context) (*User, error)
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -153,6 +519,48 @@ func (m *UserMutation) ResetUsername() {
 	m.username = nil
 }
 
+// AddProgramIDs adds the programs edge to Program by ids.
+func (m *UserMutation) AddProgramIDs(ids ...int) {
+	if m.programs == nil {
+		m.programs = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.programs[ids[i]] = struct{}{}
+	}
+}
+
+// RemoveProgramIDs removes the programs edge to Program by ids.
+func (m *UserMutation) RemoveProgramIDs(ids ...int) {
+	if m.removedprograms == nil {
+		m.removedprograms = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedprograms[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPrograms returns the removed ids of programs.
+func (m *UserMutation) RemovedProgramsIDs() (ids []int) {
+	for id := range m.removedprograms {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProgramsIDs returns the programs ids in the mutation.
+func (m *UserMutation) ProgramsIDs() (ids []int) {
+	for id := range m.programs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPrograms reset all changes of the "programs" edge.
+func (m *UserMutation) ResetPrograms() {
+	m.programs = nil
+	m.removedprograms = nil
+}
+
 // Op returns the operation name.
 func (m *UserMutation) Op() Op {
 	return m.op
@@ -268,45 +676,71 @@ func (m *UserMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.programs != nil {
+		edges = append(edges, user.EdgePrograms)
+	}
 	return edges
 }
 
 // AddedIDs returns all ids (to other nodes) that were added for
 // the given edge name.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgePrograms:
+		ids := make([]ent.Value, 0, len(m.programs))
+		for id := range m.programs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedprograms != nil {
+		edges = append(edges, user.EdgePrograms)
+	}
 	return edges
 }
 
 // RemovedIDs returns all ids (to other nodes) that were removed for
 // the given edge name.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgePrograms:
+		ids := make([]ent.Value, 0, len(m.removedprograms))
+		for id := range m.removedprograms {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
 // EdgeCleared returns a boolean indicates if this edge was
 // cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
+	switch name {
+	}
 	return false
 }
 
 // ClearEdge clears the value for the given name. It returns an
 // error if the edge name is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
 
@@ -314,5 +748,10 @@ func (m *UserMutation) ClearEdge(name string) error {
 // given edge name. It returns an error if the edge is not
 // defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
+	switch name {
+	case user.EdgePrograms:
+		m.ResetPrograms()
+		return nil
+	}
 	return fmt.Errorf("unknown User edge %s", name)
 }

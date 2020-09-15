@@ -9,6 +9,19 @@ import (
 	"github.com/francismarcus/entgql/ent"
 )
 
+// The ProgramFunc type is an adapter to allow the use of ordinary
+// function as Program mutator.
+type ProgramFunc func(context.Context, *ent.ProgramMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProgramFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProgramMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProgramMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

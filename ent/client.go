@@ -9,10 +9,12 @@ import (
 
 	"github.com/francismarcus/entgql/ent/migrate"
 
+	"github.com/francismarcus/entgql/ent/program"
 	"github.com/francismarcus/entgql/ent/user"
 
 	"github.com/facebook/ent/dialect"
 	"github.com/facebook/ent/dialect/sql"
+	"github.com/facebook/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -20,8 +22,13 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Program is the client for interacting with the Program builders.
+	Program *ProgramClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+
+	// additional fields for node api
+	tables tables
 }
 
 // NewClient creates a new client configured with the given options.
@@ -35,6 +42,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Program = NewProgramClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -66,9 +74,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	}
 	cfg := config{driver: tx, log: c.log, debug: c.debug, hooks: c.hooks}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:     ctx,
+		config:  cfg,
+		Program: NewProgramClient(cfg),
+		User:    NewUserClient(cfg),
 	}, nil
 }
 
@@ -83,15 +92,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	}
 	cfg := config{driver: &txDriver{tx: tx, drv: c.driver}, log: c.log, debug: c.debug, hooks: c.hooks}
 	return &Tx{
-		config: cfg,
-		User:   NewUserClient(cfg),
+		config:  cfg,
+		Program: NewProgramClient(cfg),
+		User:    NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		User.
+//		Program.
 //		Query().
 //		Count(ctx)
 //
@@ -113,7 +123,112 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Program.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// ProgramClient is a client for the Program schema.
+type ProgramClient struct {
+	config
+}
+
+// NewProgramClient returns a client for the Program from the given config.
+func NewProgramClient(c config) *ProgramClient {
+	return &ProgramClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `program.Hooks(f(g(h())))`.
+func (c *ProgramClient) Use(hooks ...Hook) {
+	c.hooks.Program = append(c.hooks.Program, hooks...)
+}
+
+// Create returns a create builder for Program.
+func (c *ProgramClient) Create() *ProgramCreate {
+	mutation := newProgramMutation(c.config, OpCreate)
+	return &ProgramCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// BulkCreate returns a builder for creating a bulk of Program entities.
+func (c *ProgramClient) CreateBulk(builders ...*ProgramCreate) *ProgramCreateBulk {
+	return &ProgramCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Program.
+func (c *ProgramClient) Update() *ProgramUpdate {
+	mutation := newProgramMutation(c.config, OpUpdate)
+	return &ProgramUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProgramClient) UpdateOne(pr *Program) *ProgramUpdateOne {
+	mutation := newProgramMutation(c.config, OpUpdateOne, withProgram(pr))
+	return &ProgramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProgramClient) UpdateOneID(id int) *ProgramUpdateOne {
+	mutation := newProgramMutation(c.config, OpUpdateOne, withProgramID(id))
+	return &ProgramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Program.
+func (c *ProgramClient) Delete() *ProgramDelete {
+	mutation := newProgramMutation(c.config, OpDelete)
+	return &ProgramDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ProgramClient) DeleteOne(pr *Program) *ProgramDeleteOne {
+	return c.DeleteOneID(pr.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ProgramClient) DeleteOneID(id int) *ProgramDeleteOne {
+	builder := c.Delete().Where(program.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProgramDeleteOne{builder}
+}
+
+// Query returns a query builder for Program.
+func (c *ProgramClient) Query() *ProgramQuery {
+	return &ProgramQuery{config: c.config}
+}
+
+// Get returns a Program entity by its id.
+func (c *ProgramClient) Get(ctx context.Context, id int) (*Program, error) {
+	return c.Query().Where(program.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProgramClient) GetX(ctx context.Context, id int) *Program {
+	pr, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return pr
+}
+
+// QueryCreator queries the creator edge of a Program.
+func (c *ProgramClient) QueryCreator(pr *Program) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(program.Table, program.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, program.CreatorTable, program.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProgramClient) Hooks() []Hook {
+	return c.hooks.Program
 }
 
 // UserClient is a client for the User schema.
@@ -197,6 +312,22 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 		panic(err)
 	}
 	return u
+}
+
+// QueryPrograms queries the programs edge of a User.
+func (c *UserClient) QueryPrograms(u *User) *ProgramQuery {
+	query := &ProgramQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(program.Table, program.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ProgramsTable, user.ProgramsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

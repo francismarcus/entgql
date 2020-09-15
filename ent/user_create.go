@@ -9,6 +9,7 @@ import (
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/francismarcus/entgql/ent/program"
 	"github.com/francismarcus/entgql/ent/user"
 )
 
@@ -23,6 +24,21 @@ type UserCreate struct {
 func (uc *UserCreate) SetUsername(s string) *UserCreate {
 	uc.mutation.SetUsername(s)
 	return uc
+}
+
+// AddProgramIDs adds the programs edge to Program by ids.
+func (uc *UserCreate) AddProgramIDs(ids ...int) *UserCreate {
+	uc.mutation.AddProgramIDs(ids...)
+	return uc
+}
+
+// AddPrograms adds the programs edges to Program.
+func (uc *UserCreate) AddPrograms(p ...*Program) *UserCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uc.AddProgramIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -109,6 +125,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldUsername,
 		})
 		u.Username = value
+	}
+	if nodes := uc.mutation.ProgramsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProgramsTable,
+			Columns: []string{user.ProgramsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: program.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return u, _spec
 }

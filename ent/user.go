@@ -17,6 +17,27 @@ type User struct {
 	ID int `json:"id,omitempty"`
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges UserEdges `json:"edges"`
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Programs holds the value of the programs edge.
+	Programs []*Program
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// ProgramsOrErr returns the Programs value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ProgramsOrErr() ([]*Program, error) {
+	if e.loadedTypes[0] {
+		return e.Programs, nil
+	}
+	return nil, &NotLoadedError{edge: "programs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -45,6 +66,11 @@ func (u *User) assignValues(values ...interface{}) error {
 		u.Username = value.String
 	}
 	return nil
+}
+
+// QueryPrograms queries the programs edge of the User.
+func (u *User) QueryPrograms() *ProgramQuery {
+	return (&UserClient{config: u.config}).QueryPrograms(u)
 }
 
 // Update returns a builder for updating this User.

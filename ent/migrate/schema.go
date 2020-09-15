@@ -8,6 +8,27 @@ import (
 )
 
 var (
+	// ProgramsColumns holds the columns for the "programs" table.
+	ProgramsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "user_programs", Type: field.TypeInt, Nullable: true},
+	}
+	// ProgramsTable holds the schema information for the "programs" table.
+	ProgramsTable = &schema.Table{
+		Name:       "programs",
+		Columns:    ProgramsColumns,
+		PrimaryKey: []*schema.Column{ProgramsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "programs_users_programs",
+				Columns: []*schema.Column{ProgramsColumns[2]},
+
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -22,9 +43,11 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ProgramsTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	ProgramsTable.ForeignKeys[0].RefTable = UsersTable
 }

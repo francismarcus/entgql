@@ -10,8 +10,18 @@ const (
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
 
+	// EdgePrograms holds the string denoting the programs edge name in mutations.
+	EdgePrograms = "programs"
+
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// ProgramsTable is the table the holds the programs relation/edge.
+	ProgramsTable = "programs"
+	// ProgramsInverseTable is the table name for the Program entity.
+	// It exists in this package in order to avoid circular dependency with the "program" package.
+	ProgramsInverseTable = "programs"
+	// ProgramsColumn is the table column denoting the programs relation/edge.
+	ProgramsColumn = "user_programs"
 )
 
 // Columns holds all SQL columns for user fields.

@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
@@ -14,7 +16,15 @@ type User struct {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("username"),
+		field.String("username").
+			Unique(),
+		field.String("email").
+			Unique(),
+		field.Time("created_at").
+			Default(time.Now),
+		field.Time("updated_at").
+			Default(time.Now).
+			UpdateDefault(time.Now),
 	}
 }
 

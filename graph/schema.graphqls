@@ -13,7 +13,10 @@ type PageInfo {
 
 type User implements Node {
   id: ID!
-  username: String
+  created_at: String!
+  updated_at: String!
+  email: String!
+  username: String!
   programs(
     after: Cursor
     first: Int
@@ -89,8 +92,13 @@ type AuthPayload {
   token: String
 }
 
+input usernameAvailableInput {
+  username: string!
+}
+
 type Query {
   node(id: ID!): Node
+  usernameAvailable(input: usernameAvailableInput!): Boolean
   loginUser(input: loginUserInput!): AuthPayload
   signupUser(input: signupUserInput!): AuthPayload
   users(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection

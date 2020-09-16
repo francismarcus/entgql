@@ -61,6 +61,14 @@ func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
 	return nil, err
 }
 
+func (r *queryResolver) LoginUser(ctx context.Context, input model.LoginUserInput) (*model.AuthPayload, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) SignupUser(ctx context.Context, input model.SignupUserInput) (*model.AuthPayload, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.UserConnection, error) {
 	return r.Client.User.Query().
 		WithPrograms().

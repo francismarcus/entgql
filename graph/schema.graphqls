@@ -14,8 +14,18 @@ type PageInfo {
 type User implements Node {
   id: ID!
   username: String
-  programs(after: Cursor, first: Int, before: Cursor, last: Int): ProgramConnection
-  followers(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
+  programs(
+    after: Cursor
+    first: Int
+    before: Cursor
+    last: Int
+  ): ProgramConnection
+  followers(
+    after: Cursor
+    first: Int
+    before: Cursor
+    last: Int
+  ): UserConnection
   follows(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
 }
 
@@ -48,7 +58,6 @@ input createUserInput {
   username: String!
 }
 
-
 input createProgramInput {
   name: String!
   creator: ID!
@@ -64,8 +73,26 @@ input unFollowUserInput {
   follower: ID!
 }
 
+input loginUserInput {
+  username: String!
+  password: String!
+}
+
+input signupUserInput {
+  email: String!
+  username: String!
+  password: String!
+}
+
+type AuthPayload {
+  user: User
+  token: String
+}
+
 type Query {
   node(id: ID!): Node
+  loginUser(input: loginUserInput!): AuthPayload
+  signupUser(input: signupUserInput!): AuthPayload
   users(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
 }
 

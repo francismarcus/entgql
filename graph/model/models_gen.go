@@ -2,6 +2,15 @@
 
 package model
 
+import (
+	"github.com/francismarcus/entgql/ent"
+)
+
+type AuthPayload struct {
+	User  *ent.User `json:"user"`
+	Token *string   `json:"token"`
+}
+
 type CreateProgramInput struct {
 	Name    string `json:"name"`
 	Creator int    `json:"creator"`
@@ -14,6 +23,17 @@ type CreateUserInput struct {
 type FollowUserInput struct {
 	Target   int `json:"target"`
 	Follower int `json:"follower"`
+}
+
+type LoginUserInput struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type SignupUserInput struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type UnFollowUserInput struct {

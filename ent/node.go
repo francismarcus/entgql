@@ -80,7 +80,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		ID:     u.ID,
 		Type:   "User",
 		Fields: make([]*Field, 1),
-		Edges:  make([]*Edge, 1),
+		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(u.Username); err != nil {
@@ -92,13 +92,35 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Value: string(buf),
 	}
 	var ids []int
+	ids, err = u.QueryFollowers().
+		Select(user.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[0] = &Edge{
+		IDs:  ids,
+		Type: "User",
+		Name: "Followers",
+	}
+	ids, err = u.QueryFollowing().
+		Select(user.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		IDs:  ids,
+		Type: "User",
+		Name: "Following",
+	}
 	ids, err = u.QueryPrograms().
 		Select(program.FieldID).
 		Ints(ctx)
 	if err != nil {
 		return nil, err
 	}
-	node.Edges[0] = &Edge{
+	node.Edges[2] = &Edge{
 		IDs:  ids,
 		Type: "Program",
 		Name: "Programs",

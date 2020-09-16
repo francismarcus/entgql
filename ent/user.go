@@ -24,17 +24,39 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
+	// Followers holds the value of the followers edge.
+	Followers []*User
+	// Following holds the value of the following edge.
+	Following []*User
 	// Programs holds the value of the programs edge.
 	Programs []*Program
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
+}
+
+// FollowersOrErr returns the Followers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) FollowersOrErr() ([]*User, error) {
+	if e.loadedTypes[0] {
+		return e.Followers, nil
+	}
+	return nil, &NotLoadedError{edge: "followers"}
+}
+
+// FollowingOrErr returns the Following value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) FollowingOrErr() ([]*User, error) {
+	if e.loadedTypes[1] {
+		return e.Following, nil
+	}
+	return nil, &NotLoadedError{edge: "following"}
 }
 
 // ProgramsOrErr returns the Programs value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ProgramsOrErr() ([]*Program, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[2] {
 		return e.Programs, nil
 	}
 	return nil, &NotLoadedError{edge: "programs"}
@@ -66,6 +88,16 @@ func (u *User) assignValues(values ...interface{}) error {
 		u.Username = value.String
 	}
 	return nil
+}
+
+// QueryFollowers queries the followers edge of the User.
+func (u *User) QueryFollowers() *UserQuery {
+	return (&UserClient{config: u.config}).QueryFollowers(u)
+}
+
+// QueryFollowing queries the following edge of the User.
+func (u *User) QueryFollowing() *UserQuery {
+	return (&UserClient{config: u.config}).QueryFollowing(u)
 }
 
 // QueryPrograms queries the programs edge of the User.

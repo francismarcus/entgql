@@ -392,15 +392,19 @@ func (m *ProgramMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type UserMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	username        *string
-	clearedFields   map[string]struct{}
-	programs        map[int]struct{}
-	removedprograms map[int]struct{}
-	done            bool
-	oldValue        func(context.Context) (*User, error)
+	op               Op
+	typ              string
+	id               *int
+	username         *string
+	clearedFields    map[string]struct{}
+	followers        map[int]struct{}
+	removedfollowers map[int]struct{}
+	following        map[int]struct{}
+	removedfollowing map[int]struct{}
+	programs         map[int]struct{}
+	removedprograms  map[int]struct{}
+	done             bool
+	oldValue         func(context.Context) (*User, error)
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -517,6 +521,90 @@ func (m *UserMutation) OldUsername(ctx context.Context) (v string, err error) {
 // ResetUsername reset all changes of the "username" field.
 func (m *UserMutation) ResetUsername() {
 	m.username = nil
+}
+
+// AddFollowerIDs adds the followers edge to User by ids.
+func (m *UserMutation) AddFollowerIDs(ids ...int) {
+	if m.followers == nil {
+		m.followers = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.followers[ids[i]] = struct{}{}
+	}
+}
+
+// RemoveFollowerIDs removes the followers edge to User by ids.
+func (m *UserMutation) RemoveFollowerIDs(ids ...int) {
+	if m.removedfollowers == nil {
+		m.removedfollowers = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedfollowers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFollowers returns the removed ids of followers.
+func (m *UserMutation) RemovedFollowersIDs() (ids []int) {
+	for id := range m.removedfollowers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FollowersIDs returns the followers ids in the mutation.
+func (m *UserMutation) FollowersIDs() (ids []int) {
+	for id := range m.followers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFollowers reset all changes of the "followers" edge.
+func (m *UserMutation) ResetFollowers() {
+	m.followers = nil
+	m.removedfollowers = nil
+}
+
+// AddFollowingIDs adds the following edge to User by ids.
+func (m *UserMutation) AddFollowingIDs(ids ...int) {
+	if m.following == nil {
+		m.following = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.following[ids[i]] = struct{}{}
+	}
+}
+
+// RemoveFollowingIDs removes the following edge to User by ids.
+func (m *UserMutation) RemoveFollowingIDs(ids ...int) {
+	if m.removedfollowing == nil {
+		m.removedfollowing = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedfollowing[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedFollowing returns the removed ids of following.
+func (m *UserMutation) RemovedFollowingIDs() (ids []int) {
+	for id := range m.removedfollowing {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// FollowingIDs returns the following ids in the mutation.
+func (m *UserMutation) FollowingIDs() (ids []int) {
+	for id := range m.following {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetFollowing reset all changes of the "following" edge.
+func (m *UserMutation) ResetFollowing() {
+	m.following = nil
+	m.removedfollowing = nil
 }
 
 // AddProgramIDs adds the programs edge to Program by ids.
@@ -676,7 +764,13 @@ func (m *UserMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
+	if m.followers != nil {
+		edges = append(edges, user.EdgeFollowers)
+	}
+	if m.following != nil {
+		edges = append(edges, user.EdgeFollowing)
+	}
 	if m.programs != nil {
 		edges = append(edges, user.EdgePrograms)
 	}
@@ -687,6 +781,18 @@ func (m *UserMutation) AddedEdges() []string {
 // the given edge name.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case user.EdgeFollowers:
+		ids := make([]ent.Value, 0, len(m.followers))
+		for id := range m.followers {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeFollowing:
+		ids := make([]ent.Value, 0, len(m.following))
+		for id := range m.following {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgePrograms:
 		ids := make([]ent.Value, 0, len(m.programs))
 		for id := range m.programs {
@@ -700,7 +806,13 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
+	if m.removedfollowers != nil {
+		edges = append(edges, user.EdgeFollowers)
+	}
+	if m.removedfollowing != nil {
+		edges = append(edges, user.EdgeFollowing)
+	}
 	if m.removedprograms != nil {
 		edges = append(edges, user.EdgePrograms)
 	}
@@ -711,6 +823,18 @@ func (m *UserMutation) RemovedEdges() []string {
 // the given edge name.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case user.EdgeFollowers:
+		ids := make([]ent.Value, 0, len(m.removedfollowers))
+		for id := range m.removedfollowers {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeFollowing:
+		ids := make([]ent.Value, 0, len(m.removedfollowing))
+		for id := range m.removedfollowing {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgePrograms:
 		ids := make([]ent.Value, 0, len(m.removedprograms))
 		for id := range m.removedprograms {
@@ -724,7 +848,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	return edges
 }
 
@@ -749,6 +873,12 @@ func (m *UserMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
+	case user.EdgeFollowers:
+		m.ResetFollowers()
+		return nil
+	case user.EdgeFollowing:
+		m.ResetFollowing()
+		return nil
 	case user.EdgePrograms:
 		m.ResetPrograms()
 		return nil

@@ -26,6 +26,36 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 	return uc
 }
 
+// AddFollowerIDs adds the followers edge to User by ids.
+func (uc *UserCreate) AddFollowerIDs(ids ...int) *UserCreate {
+	uc.mutation.AddFollowerIDs(ids...)
+	return uc
+}
+
+// AddFollowers adds the followers edges to User.
+func (uc *UserCreate) AddFollowers(u ...*User) *UserCreate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return uc.AddFollowerIDs(ids...)
+}
+
+// AddFollowingIDs adds the following edge to User by ids.
+func (uc *UserCreate) AddFollowingIDs(ids ...int) *UserCreate {
+	uc.mutation.AddFollowingIDs(ids...)
+	return uc
+}
+
+// AddFollowing adds the following edges to User.
+func (uc *UserCreate) AddFollowing(u ...*User) *UserCreate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return uc.AddFollowingIDs(ids...)
+}
+
 // AddProgramIDs adds the programs edge to Program by ids.
 func (uc *UserCreate) AddProgramIDs(ids ...int) *UserCreate {
 	uc.mutation.AddProgramIDs(ids...)
@@ -125,6 +155,44 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldUsername,
 		})
 		u.Username = value
+	}
+	if nodes := uc.mutation.FollowersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.FollowersTable,
+			Columns: user.FollowersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.FollowingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.FollowingTable,
+			Columns: user.FollowingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := uc.mutation.ProgramsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

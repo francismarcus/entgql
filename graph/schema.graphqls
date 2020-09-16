@@ -15,6 +15,8 @@ type User implements Node {
   id: ID!
   username: String
   programs(after: Cursor, first: Int, before: Cursor, last: Int): ProgramConnection
+  followers(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
+  follows(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
 }
 
 type UserEdge {
@@ -52,6 +54,16 @@ input createProgramInput {
   creator: ID!
 }
 
+input followUserInput {
+  target: ID!
+  follower: ID!
+}
+
+input unFollowUserInput {
+  target: ID!
+  follower: ID!
+}
+
 type Query {
   node(id: ID!): Node
   users(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
@@ -60,4 +72,6 @@ type Query {
 type Mutation {
   createUser(input: createUserInput!): User!
   createProgram(input: createProgramInput!): Program!
+  followUser(input: followUserInput!): User
+  unFollowUser(input: unFollowUserInput!): User
 }

@@ -21,6 +21,8 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("following", User.Type).
+			From("followers"),
 		edge.To("programs", Program.Type),
 	}
 }

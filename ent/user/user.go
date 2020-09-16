@@ -10,11 +10,19 @@ const (
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
 
+	// EdgeFollowers holds the string denoting the followers edge name in mutations.
+	EdgeFollowers = "followers"
+	// EdgeFollowing holds the string denoting the following edge name in mutations.
+	EdgeFollowing = "following"
 	// EdgePrograms holds the string denoting the programs edge name in mutations.
 	EdgePrograms = "programs"
 
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// FollowersTable is the table the holds the followers relation/edge. The primary key declared below.
+	FollowersTable = "user_following"
+	// FollowingTable is the table the holds the following relation/edge. The primary key declared below.
+	FollowingTable = "user_following"
 	// ProgramsTable is the table the holds the programs relation/edge.
 	ProgramsTable = "programs"
 	// ProgramsInverseTable is the table name for the Program entity.
@@ -29,3 +37,12 @@ var Columns = []string{
 	FieldID,
 	FieldUsername,
 }
+
+var (
+	// FollowersPrimaryKey and FollowersColumn2 are the table columns denoting the
+	// primary key for the followers relation (M2M).
+	FollowersPrimaryKey = []string{"user_id", "follower_id"}
+	// FollowingPrimaryKey and FollowingColumn2 are the table columns denoting the
+	// primary key for the following relation (M2M).
+	FollowingPrimaryKey = []string{"user_id", "follower_id"}
+)

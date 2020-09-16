@@ -10,3 +10,13 @@ type CreateProgramInput struct {
 type CreateUserInput struct {
 	Username string `json:"username"`
 }
+
+type FollowUserInput struct {
+	Target   int `json:"target"`
+	Follower int `json:"follower"`
+}
+
+type UnFollowUserInput struct {
+	Target   int `json:"target"`
+	Follower int `json:"follower"`
+}

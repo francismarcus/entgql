@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
+	// Tweet is the client for interacting with the Tweet builders.
+	Tweet *TweetClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -152,6 +154,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Program = NewProgramClient(tx.config)
+	tx.Tweet = NewTweetClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

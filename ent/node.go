@@ -12,6 +12,7 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/schema"
 	"github.com/francismarcus/entgql/ent/program"
+	"github.com/francismarcus/entgql/ent/tweet"
 	"github.com/francismarcus/entgql/ent/user"
 
 	"golang.org/x/sync/semaphore"
@@ -75,12 +76,51 @@ func (pr *Program) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
+func (t *Tweet) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     t.ID,
+		Type:   "Tweet",
+		Fields: make([]*Field, 2),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(t.Message); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "Message",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(t.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "CreatedAt",
+		Value: string(buf),
+	}
+	var ids []int
+	ids, err = t.QueryCreator().
+		Select(user.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[0] = &Edge{
+		IDs:  ids,
+		Type: "User",
+		Name: "Creator",
+	}
+	return node, nil
+}
+
 func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     u.ID,
 		Type:   "User",
-		Fields: make([]*Field, 1),
-		Edges:  make([]*Edge, 3),
+		Fields: make([]*Field, 4),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(u.Username); err != nil {
@@ -89,6 +129,30 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[0] = &Field{
 		Type:  "string",
 		Name:  "Username",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(u.Email); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "Email",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(u.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "time.Time",
+		Name:  "CreatedAt",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(u.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "time.Time",
+		Name:  "UpdatedAt",
 		Value: string(buf),
 	}
 	var ids []int
@@ -125,6 +189,17 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Type: "Program",
 		Name: "Programs",
 	}
+	ids, err = u.QueryTweets().
+		Select(tweet.FieldID).
+		Ints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		IDs:  ids,
+		Type: "Tweet",
+		Name: "Tweets",
+	}
 	return node, nil
 }
 
@@ -152,6 +227,12 @@ func (c *Client) noder(ctx context.Context, tbl string, id int) (Noder, error) {
 	switch tbl {
 	case program.Table:
 		n, err := c.Program.Get(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case tweet.Table:
+		n, err := c.Tweet.Get(ctx, id)
 		if err != nil {
 			return nil, err
 		}

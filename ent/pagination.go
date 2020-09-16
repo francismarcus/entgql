@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/francismarcus/entgql/ent/program"
+	"github.com/francismarcus/entgql/ent/tweet"
 	"github.com/francismarcus/entgql/ent/user"
 	"github.com/ugorji/go/codec"
 )
@@ -132,6 +133,90 @@ func (pr *ProgramQuery) Paginate(ctx context.Context, after *Cursor, first *int,
 	conn.Edges = make([]*ProgramEdge, len(nodes))
 	for i, node := range nodes {
 		conn.Edges[i] = &ProgramEdge{
+			Node: node,
+			Cursor: Cursor{
+				ID: node.ID,
+			},
+		}
+	}
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+
+	return &conn, nil
+}
+
+// TweetEdge is the edge representation of Tweet.
+type TweetEdge struct {
+	Node   *Tweet `json:"node"`
+	Cursor Cursor `json:"cursor"`
+}
+
+// TweetConnection is the connection containing edges to Tweet.
+type TweetConnection struct {
+	Edges    []*TweetEdge `json:"edges"`
+	PageInfo PageInfo     `json:"pageInfo"`
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Tweet.
+func (t *TweetQuery) Paginate(ctx context.Context, after *Cursor, first *int, before *Cursor, last *int) (*TweetConnection, error) {
+	if first != nil && last != nil {
+		return nil, ErrInvalidPagination
+	}
+	if first != nil {
+		if *first == 0 {
+			return &TweetConnection{
+				Edges: []*TweetEdge{},
+			}, nil
+		} else if *first < 0 {
+			return nil, ErrInvalidPagination
+		}
+	}
+	if last != nil {
+		if *last == 0 {
+			return &TweetConnection{
+				Edges: []*TweetEdge{},
+			}, nil
+		} else if *last < 0 {
+			return nil, ErrInvalidPagination
+		}
+	}
+
+	if after != nil {
+		t = t.Where(tweet.IDGT(after.ID))
+	}
+	if before != nil {
+		t = t.Where(tweet.IDLT(before.ID))
+	}
+	if first != nil {
+		t = t.Order(Asc(tweet.FieldID)).Limit(*first + 1)
+	}
+	if last != nil {
+		t = t.Order(Desc(tweet.FieldID)).Limit(*last + 1)
+	}
+
+	nodes, err := t.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return &TweetConnection{
+			Edges: []*TweetEdge{},
+		}, err
+	}
+	if last != nil {
+		for left, right := 0, len(nodes)-1; left < right; left, right = left+1, right-1 {
+			nodes[left], nodes[right] = nodes[right], nodes[left]
+		}
+	}
+
+	var conn TweetConnection
+	if first != nil && len(nodes) > *first {
+		conn.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && len(nodes) > *last {
+		conn.PageInfo.HasPreviousPage = true
+		nodes = nodes[1:]
+	}
+	conn.Edges = make([]*TweetEdge, len(nodes))
+	for i, node := range nodes {
+		conn.Edges[i] = &TweetEdge{
 			Node: node,
 			Cursor: Cursor{
 				ID: node.ID,

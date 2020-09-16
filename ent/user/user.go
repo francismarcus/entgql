@@ -2,6 +2,10 @@
 
 package user
 
+import (
+	"time"
+)
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
@@ -9,6 +13,12 @@ const (
 	FieldID = "id"
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
+	// FieldEmail holds the string denoting the email field in the database.
+	FieldEmail = "email"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 
 	// EdgeFollowers holds the string denoting the followers edge name in mutations.
 	EdgeFollowers = "followers"
@@ -16,6 +26,8 @@ const (
 	EdgeFollowing = "following"
 	// EdgePrograms holds the string denoting the programs edge name in mutations.
 	EdgePrograms = "programs"
+	// EdgeTweets holds the string denoting the tweets edge name in mutations.
+	EdgeTweets = "tweets"
 
 	// Table holds the table name of the user in the database.
 	Table = "users"
@@ -30,12 +42,22 @@ const (
 	ProgramsInverseTable = "programs"
 	// ProgramsColumn is the table column denoting the programs relation/edge.
 	ProgramsColumn = "user_programs"
+	// TweetsTable is the table the holds the tweets relation/edge.
+	TweetsTable = "tweets"
+	// TweetsInverseTable is the table name for the Tweet entity.
+	// It exists in this package in order to avoid circular dependency with the "tweet" package.
+	TweetsInverseTable = "tweets"
+	// TweetsColumn is the table column denoting the tweets relation/edge.
+	TweetsColumn = "user_tweets"
 )
 
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
 	FieldUsername,
+	FieldEmail,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 var (
@@ -45,4 +67,13 @@ var (
 	// FollowingPrimaryKey and FollowingColumn2 are the table columns denoting the
 	// primary key for the following relation (M2M).
 	FollowingPrimaryKey = []string{"user_id", "follower_id"}
+)
+
+var (
+	// DefaultCreatedAt holds the default value on creation for the created_at field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	UpdateDefaultUpdatedAt func() time.Time
 )

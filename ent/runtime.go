@@ -2,8 +2,34 @@
 
 package ent
 
+import (
+	"time"
+
+	"github.com/francismarcus/entgql/ent/schema"
+	"github.com/francismarcus/entgql/ent/tweet"
+	"github.com/francismarcus/entgql/ent/user"
+)
+
 // The init function reads all schema descriptors with runtime
 // code (default values, validators or hooks) and stitches it
 // to their package variables.
 func init() {
+	tweetFields := schema.Tweet{}.Fields()
+	_ = tweetFields
+	// tweetDescCreatedAt is the schema descriptor for created_at field.
+	tweetDescCreatedAt := tweetFields[1].Descriptor()
+	// tweet.DefaultCreatedAt holds the default value on creation for the created_at field.
+	tweet.DefaultCreatedAt = tweetDescCreatedAt.Default.(func() time.Time)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userFields[2].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
+	// userDescUpdatedAt is the schema descriptor for updated_at field.
+	userDescUpdatedAt := userFields[3].Descriptor()
+	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
+	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/francismarcus/entgql/ent/user"
@@ -17,6 +18,12 @@ type User struct {
 	ID int `json:"id,omitempty"`
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
+	// Email holds the value of the "email" field.
+	Email string `json:"email,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges UserEdges `json:"edges"`
@@ -30,9 +37,11 @@ type UserEdges struct {
 	Following []*User
 	// Programs holds the value of the programs edge.
 	Programs []*Program
+	// Tweets holds the value of the tweets edge.
+	Tweets []*Tweet
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // FollowersOrErr returns the Followers value or an error if the edge
@@ -62,11 +71,23 @@ func (e UserEdges) ProgramsOrErr() ([]*Program, error) {
 	return nil, &NotLoadedError{edge: "programs"}
 }
 
+// TweetsOrErr returns the Tweets value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) TweetsOrErr() ([]*Tweet, error) {
+	if e.loadedTypes[3] {
+		return e.Tweets, nil
+	}
+	return nil, &NotLoadedError{edge: "tweets"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // username
+		&sql.NullString{}, // email
+		&sql.NullTime{},   // created_at
+		&sql.NullTime{},   // updated_at
 	}
 }
 
@@ -87,6 +108,21 @@ func (u *User) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		u.Username = value.String
 	}
+	if value, ok := values[1].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field email", values[1])
+	} else if value.Valid {
+		u.Email = value.String
+	}
+	if value, ok := values[2].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field created_at", values[2])
+	} else if value.Valid {
+		u.CreatedAt = value.Time
+	}
+	if value, ok := values[3].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field updated_at", values[3])
+	} else if value.Valid {
+		u.UpdatedAt = value.Time
+	}
 	return nil
 }
 
@@ -103,6 +139,11 @@ func (u *User) QueryFollowing() *UserQuery {
 // QueryPrograms queries the programs edge of the User.
 func (u *User) QueryPrograms() *ProgramQuery {
 	return (&UserClient{config: u.config}).QueryPrograms(u)
+}
+
+// QueryTweets queries the tweets edge of the User.
+func (u *User) QueryTweets() *TweetQuery {
+	return (&UserClient{config: u.config}).QueryTweets(u)
 }
 
 // Update returns a builder for updating this User.
@@ -130,6 +171,12 @@ func (u *User) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", u.ID))
 	builder.WriteString(", username=")
 	builder.WriteString(u.Username)
+	builder.WriteString(", email=")
+	builder.WriteString(u.Email)
+	builder.WriteString(", created_at=")
+	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", updated_at=")
+	builder.WriteString(u.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

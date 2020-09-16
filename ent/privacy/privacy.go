@@ -234,6 +234,30 @@ func (f ProgramMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutatio
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ProgramMutation", m)
 }
 
+// The TweetQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type TweetQueryRuleFunc func(context.Context, *ent.TweetQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f TweetQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.TweetQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.TweetQuery", q)
+}
+
+// The TweetMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type TweetMutationRuleFunc func(context.Context, *ent.TweetMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f TweetMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.TweetMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.TweetMutation", m)
+}
+
 // The UserQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type UserQueryRuleFunc func(context.Context, *ent.UserQuery) error

@@ -11,6 +11,11 @@ type PageInfo {
   endCursor: Cursor
 }
 
+type Tweet implements Node {
+  id: ID!
+  user: User
+}
+
 type User implements Node {
   id: ID!
   created_at: String!
@@ -58,7 +63,7 @@ type ProgramConnection {
 }
 
 input createUserInput {
-  username: String!
+  Username: String!
 }
 
 input createProgramInput {
@@ -67,33 +72,33 @@ input createProgramInput {
 }
 
 input followUserInput {
-  target: ID!
-  follower: ID!
+  FollowID: ID!
+  UserID: ID!
 }
 
 input unFollowUserInput {
-  target: ID!
-  follower: ID!
+  FollowID: ID!
+  UserID: ID!
 }
 
 input loginUserInput {
-  username: String!
-  password: String!
+  Username: String!
+  Password: String!
 }
 
 input signupUserInput {
-  email: String!
-  username: String!
-  password: String!
+  Email: String!
+  Username: String!
+  Password: String!
 }
 
 type AuthPayload {
-  user: User
+  User: User
   token: String
 }
 
 input usernameAvailableInput {
-  username: string!
+  username: String!
 }
 
 type Query {

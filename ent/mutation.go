@@ -6,8 +6,10 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/francismarcus/entgql/ent/program"
+	"github.com/francismarcus/entgql/ent/tweet"
 	"github.com/francismarcus/entgql/ent/user"
 
 	"github.com/facebook/ent"
@@ -23,6 +25,7 @@ const (
 
 	// Node types.
 	TypeProgram = "Program"
+	TypeTweet   = "Tweet"
 	TypeUser    = "User"
 )
 
@@ -388,6 +391,423 @@ func (m *ProgramMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Program edge %s", name)
 }
 
+// TweetMutation represents an operation that mutate the Tweets
+// nodes in the graph.
+type TweetMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	message        *string
+	created_at     *time.Time
+	clearedFields  map[string]struct{}
+	creator        *int
+	clearedcreator bool
+	done           bool
+	oldValue       func(context.Context) (*Tweet, error)
+}
+
+var _ ent.Mutation = (*TweetMutation)(nil)
+
+// tweetOption allows to manage the mutation configuration using functional options.
+type tweetOption func(*TweetMutation)
+
+// newTweetMutation creates new mutation for $n.Name.
+func newTweetMutation(c config, op Op, opts ...tweetOption) *TweetMutation {
+	m := &TweetMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTweet,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTweetID sets the id field of the mutation.
+func withTweetID(id int) tweetOption {
+	return func(m *TweetMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Tweet
+		)
+		m.oldValue = func(ctx context.Context) (*Tweet, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Tweet.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTweet sets the old Tweet of the mutation.
+func withTweet(node *Tweet) tweetOption {
+	return func(m *TweetMutation) {
+		m.oldValue = func(context.Context) (*Tweet, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TweetMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TweetMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the id value in the mutation. Note that, the id
+// is available only if it was provided to the builder.
+func (m *TweetMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetMessage sets the message field.
+func (m *TweetMutation) SetMessage(s string) {
+	m.message = &s
+}
+
+// Message returns the message value in the mutation.
+func (m *TweetMutation) Message() (r string, exists bool) {
+	v := m.message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessage returns the old message value of the Tweet.
+// If the Tweet object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *TweetMutation) OldMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMessage is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessage: %w", err)
+	}
+	return oldValue.Message, nil
+}
+
+// ResetMessage reset all changes of the "message" field.
+func (m *TweetMutation) ResetMessage() {
+	m.message = nil
+}
+
+// SetCreatedAt sets the created_at field.
+func (m *TweetMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the created_at value in the mutation.
+func (m *TweetMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old created_at value of the Tweet.
+// If the Tweet object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *TweetMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt reset all changes of the "created_at" field.
+func (m *TweetMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetCreatorID sets the creator edge to User by id.
+func (m *TweetMutation) SetCreatorID(id int) {
+	m.creator = &id
+}
+
+// ClearCreator clears the creator edge to User.
+func (m *TweetMutation) ClearCreator() {
+	m.clearedcreator = true
+}
+
+// CreatorCleared returns if the edge creator was cleared.
+func (m *TweetMutation) CreatorCleared() bool {
+	return m.clearedcreator
+}
+
+// CreatorID returns the creator id in the mutation.
+func (m *TweetMutation) CreatorID() (id int, exists bool) {
+	if m.creator != nil {
+		return *m.creator, true
+	}
+	return
+}
+
+// CreatorIDs returns the creator ids in the mutation.
+// Note that ids always returns len(ids) <= 1 for unique edges, and you should use
+// CreatorID instead. It exists only for internal usage by the builders.
+func (m *TweetMutation) CreatorIDs() (ids []int) {
+	if id := m.creator; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCreator reset all changes of the "creator" edge.
+func (m *TweetMutation) ResetCreator() {
+	m.creator = nil
+	m.clearedcreator = false
+}
+
+// Op returns the operation name.
+func (m *TweetMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Tweet).
+func (m *TweetMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during
+// this mutation. Note that, in order to get all numeric
+// fields that were in/decremented, call AddedFields().
+func (m *TweetMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.message != nil {
+		fields = append(fields, tweet.FieldMessage)
+	}
+	if m.created_at != nil {
+		fields = append(fields, tweet.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name.
+// The second boolean value indicates that this field was
+// not set, or was not define in the schema.
+func (m *TweetMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case tweet.FieldMessage:
+		return m.Message()
+	case tweet.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *TweetMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case tweet.FieldMessage:
+		return m.OldMessage(ctx)
+	case tweet.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Tweet field %s", name)
+}
+
+// SetField sets the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *TweetMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case tweet.FieldMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessage(v)
+		return nil
+	case tweet.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Tweet field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented
+// or decremented during this mutation.
+func (m *TweetMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was in/decremented
+// from a field with the given name. The second value indicates
+// that this field was not set, or was not define in the schema.
+func (m *TweetMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *TweetMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Tweet numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared
+// during this mutation.
+func (m *TweetMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicates if this field was
+// cleared in this mutation.
+func (m *TweetMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value for the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TweetMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Tweet nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation regarding the
+// given field name. It returns an error if the field is not
+// defined in the schema.
+func (m *TweetMutation) ResetField(name string) error {
+	switch name {
+	case tweet.FieldMessage:
+		m.ResetMessage()
+		return nil
+	case tweet.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Tweet field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this
+// mutation.
+func (m *TweetMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.creator != nil {
+		edges = append(edges, tweet.EdgeCreator)
+	}
+	return edges
+}
+
+// AddedIDs returns all ids (to other nodes) that were added for
+// the given edge name.
+func (m *TweetMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case tweet.EdgeCreator:
+		if id := m.creator; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this
+// mutation.
+func (m *TweetMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all ids (to other nodes) that were removed for
+// the given edge name.
+func (m *TweetMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this
+// mutation.
+func (m *TweetMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedcreator {
+		edges = append(edges, tweet.EdgeCreator)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean indicates if this edge was
+// cleared in this mutation.
+func (m *TweetMutation) EdgeCleared(name string) bool {
+	switch name {
+	case tweet.EdgeCreator:
+		return m.clearedcreator
+	}
+	return false
+}
+
+// ClearEdge clears the value for the given name. It returns an
+// error if the edge name is not defined in the schema.
+func (m *TweetMutation) ClearEdge(name string) error {
+	switch name {
+	case tweet.EdgeCreator:
+		m.ClearCreator()
+		return nil
+	}
+	return fmt.Errorf("unknown Tweet unique edge %s", name)
+}
+
+// ResetEdge resets all changes in the mutation regarding the
+// given edge name. It returns an error if the edge is not
+// defined in the schema.
+func (m *TweetMutation) ResetEdge(name string) error {
+	switch name {
+	case tweet.EdgeCreator:
+		m.ResetCreator()
+		return nil
+	}
+	return fmt.Errorf("unknown Tweet edge %s", name)
+}
+
 // UserMutation represents an operation that mutate the Users
 // nodes in the graph.
 type UserMutation struct {
@@ -396,6 +816,9 @@ type UserMutation struct {
 	typ              string
 	id               *int
 	username         *string
+	email            *string
+	created_at       *time.Time
+	updated_at       *time.Time
 	clearedFields    map[string]struct{}
 	followers        map[int]struct{}
 	removedfollowers map[int]struct{}
@@ -403,6 +826,8 @@ type UserMutation struct {
 	removedfollowing map[int]struct{}
 	programs         map[int]struct{}
 	removedprograms  map[int]struct{}
+	tweets           map[int]struct{}
+	removedtweets    map[int]struct{}
 	done             bool
 	oldValue         func(context.Context) (*User, error)
 }
@@ -521,6 +946,117 @@ func (m *UserMutation) OldUsername(ctx context.Context) (v string, err error) {
 // ResetUsername reset all changes of the "username" field.
 func (m *UserMutation) ResetUsername() {
 	m.username = nil
+}
+
+// SetEmail sets the email field.
+func (m *UserMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the email value in the mutation.
+func (m *UserMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old email value of the User.
+// If the User object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *UserMutation) OldEmail(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldEmail is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ResetEmail reset all changes of the "email" field.
+func (m *UserMutation) ResetEmail() {
+	m.email = nil
+}
+
+// SetCreatedAt sets the created_at field.
+func (m *UserMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the created_at value in the mutation.
+func (m *UserMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old created_at value of the User.
+// If the User object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *UserMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt reset all changes of the "created_at" field.
+func (m *UserMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (m *UserMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the updated_at value in the mutation.
+func (m *UserMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old updated_at value of the User.
+// If the User object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *UserMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpdatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt reset all changes of the "updated_at" field.
+func (m *UserMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
 // AddFollowerIDs adds the followers edge to User by ids.
@@ -649,6 +1185,48 @@ func (m *UserMutation) ResetPrograms() {
 	m.removedprograms = nil
 }
 
+// AddTweetIDs adds the tweets edge to Tweet by ids.
+func (m *UserMutation) AddTweetIDs(ids ...int) {
+	if m.tweets == nil {
+		m.tweets = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.tweets[ids[i]] = struct{}{}
+	}
+}
+
+// RemoveTweetIDs removes the tweets edge to Tweet by ids.
+func (m *UserMutation) RemoveTweetIDs(ids ...int) {
+	if m.removedtweets == nil {
+		m.removedtweets = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedtweets[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTweets returns the removed ids of tweets.
+func (m *UserMutation) RemovedTweetsIDs() (ids []int) {
+	for id := range m.removedtweets {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TweetsIDs returns the tweets ids in the mutation.
+func (m *UserMutation) TweetsIDs() (ids []int) {
+	for id := range m.tweets {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTweets reset all changes of the "tweets" edge.
+func (m *UserMutation) ResetTweets() {
+	m.tweets = nil
+	m.removedtweets = nil
+}
+
 // Op returns the operation name.
 func (m *UserMutation) Op() Op {
 	return m.op
@@ -663,9 +1241,18 @@ func (m *UserMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 4)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
+	}
+	if m.email != nil {
+		fields = append(fields, user.FieldEmail)
+	}
+	if m.created_at != nil {
+		fields = append(fields, user.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, user.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -677,6 +1264,12 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldUsername:
 		return m.Username()
+	case user.FieldEmail:
+		return m.Email()
+	case user.FieldCreatedAt:
+		return m.CreatedAt()
+	case user.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -688,6 +1281,12 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldUsername:
 		return m.OldUsername(ctx)
+	case user.FieldEmail:
+		return m.OldEmail(ctx)
+	case user.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case user.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -703,6 +1302,27 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUsername(v)
+		return nil
+	case user.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case user.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case user.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -757,6 +1377,15 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldUsername:
 		m.ResetUsername()
 		return nil
+	case user.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case user.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case user.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -764,7 +1393,7 @@ func (m *UserMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.followers != nil {
 		edges = append(edges, user.EdgeFollowers)
 	}
@@ -773,6 +1402,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.programs != nil {
 		edges = append(edges, user.EdgePrograms)
+	}
+	if m.tweets != nil {
+		edges = append(edges, user.EdgeTweets)
 	}
 	return edges
 }
@@ -799,6 +1431,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeTweets:
+		ids := make([]ent.Value, 0, len(m.tweets))
+		for id := range m.tweets {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -806,7 +1444,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedfollowers != nil {
 		edges = append(edges, user.EdgeFollowers)
 	}
@@ -815,6 +1453,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedprograms != nil {
 		edges = append(edges, user.EdgePrograms)
+	}
+	if m.removedtweets != nil {
+		edges = append(edges, user.EdgeTweets)
 	}
 	return edges
 }
@@ -841,6 +1482,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeTweets:
+		ids := make([]ent.Value, 0, len(m.removedtweets))
+		for id := range m.removedtweets {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -848,7 +1495,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	return edges
 }
 
@@ -881,6 +1528,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgePrograms:
 		m.ResetPrograms()
+		return nil
+	case user.EdgeTweets:
+		m.ResetTweets()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

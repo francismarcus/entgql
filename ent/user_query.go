@@ -14,6 +14,7 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/francismarcus/entgql/ent/predicate"
 	"github.com/francismarcus/entgql/ent/program"
+	"github.com/francismarcus/entgql/ent/tweet"
 	"github.com/francismarcus/entgql/ent/user"
 )
 
@@ -29,6 +30,7 @@ type UserQuery struct {
 	withFollowers *UserQuery
 	withFollowing *UserQuery
 	withPrograms  *ProgramQuery
+	withTweets    *TweetQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -105,6 +107,24 @@ func (uq *UserQuery) QueryPrograms() *ProgramQuery {
 			sqlgraph.From(user.Table, user.FieldID, uq.sqlQuery()),
 			sqlgraph.To(program.Table, program.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.ProgramsTable, user.ProgramsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTweets chains the current query on the tweets edge.
+func (uq *UserQuery) QueryTweets() *TweetQuery {
+	query := &TweetQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, uq.sqlQuery()),
+			sqlgraph.To(tweet.Table, tweet.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.TweetsTable, user.TweetsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -324,6 +344,17 @@ func (uq *UserQuery) WithPrograms(opts ...func(*ProgramQuery)) *UserQuery {
 	return uq
 }
 
+//  WithTweets tells the query-builder to eager-loads the nodes that are connected to
+// the "tweets" edge. The optional arguments used to configure the query builder of the edge.
+func (uq *UserQuery) WithTweets(opts ...func(*TweetQuery)) *UserQuery {
+	query := &TweetQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withTweets = query
+	return uq
+}
+
 // GroupBy used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -390,10 +421,11 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			uq.withFollowers != nil,
 			uq.withFollowing != nil,
 			uq.withPrograms != nil,
+			uq.withTweets != nil,
 		}
 	)
 	_spec.ScanValues = func() []interface{} {
@@ -568,6 +600,34 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "user_programs" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Programs = append(node.Edges.Programs, n)
+		}
+	}
+
+	if query := uq.withTweets; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*User)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+		}
+		query.withFKs = true
+		query.Where(predicate.Tweet(func(s *sql.Selector) {
+			s.Where(sql.InValues(user.TweetsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.user_tweets
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "user_tweets" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_tweets" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Tweets = append(node.Edges.Tweets, n)
 		}
 	}
 

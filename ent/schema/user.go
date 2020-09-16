@@ -34,5 +34,6 @@ func (User) Edges() []ent.Edge {
 		edge.To("following", User.Type).
 			From("followers"),
 		edge.To("programs", Program.Type),
+		edge.To("tweets", Tweet.Type),
 	}
 }

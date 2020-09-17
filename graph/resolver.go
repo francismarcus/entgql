@@ -2,15 +2,19 @@ package graph
 
 import (
 	"github.com/francismarcus/entgql/ent"
-	// drivers for pg
-	_ "github.com/lib/pq"
+	"github.com/francismarcus/entgql/graph/generated"
 )
 
-// This file will not be regenerated automatically.
-//
-// It serves as dependency injection for your app, add any dependencies you require here.
+// New adds ent.Client to resolvers
+func New(client *ent.Client) generated.Config {
+	return generated.Config{
+		Resolvers: &Resolver{
+			client: client,
+		},
+	}
+}
 
 // Resolver has client from ent
 type Resolver struct {
-	Client *ent.Client
+	client *ent.Client
 }

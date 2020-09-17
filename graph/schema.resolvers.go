@@ -10,14 +10,17 @@ import (
 	"log"
 
 	"github.com/francismarcus/entgql/ent"
+	"github.com/francismarcus/entgql/ent/user"
 	"github.com/francismarcus/entgql/graph/generated"
 	"github.com/francismarcus/entgql/graph/model"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*ent.User, error) {
-	u, err := r.Client.User.
+	u, err := r.client.User.
 		Create().
 		SetUsername(input.Username).
+		SetEmail(input.Email).
+		SetPassword(input.Password).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating user: %v", err)
@@ -27,7 +30,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 }
 
 func (r *mutationResolver) CreateProgram(ctx context.Context, input model.CreateProgramInput) (*ent.Program, error) {
-	p, err := r.Client.Program.Create().
+	p, err := r.client.Program.Create().
 		SetName(input.Name).
 		SetCreatorID(input.Creator).
 		Save(ctx)
@@ -40,19 +43,19 @@ func (r *mutationResolver) CreateProgram(ctx context.Context, input model.Create
 }
 
 func (r *mutationResolver) FollowUser(ctx context.Context, input model.FollowUserInput) (*ent.User, error) {
-	u := r.Client.User.UpdateOneID(input.UserID).AddFollowingIDs(input.FollowID).SaveX(ctx)
+	u := r.client.User.UpdateOneID(input.UserID).AddFollowingIDs(input.FollowID).SaveX(ctx)
 
 	return u, nil
 }
 
 func (r *mutationResolver) UnFollowUser(ctx context.Context, input model.UnFollowUserInput) (*ent.User, error) {
-	u := r.Client.User.UpdateOneID(input.UserID).RemoveFollowingIDs(input.FollowID).SaveX(ctx)
+	u := r.client.User.UpdateOneID(input.UserID).RemoveFollowingIDs(input.FollowID).SaveX(ctx)
 
 	return u, nil
 }
 
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
-	node, err := r.Client.Noder(ctx, id)
+	node, err := r.client.Noder(ctx, id)
 	if err == nil {
 		return node, nil
 	}
@@ -63,8 +66,23 @@ func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
 	return nil, err
 }
 
+func (r *queryResolver) Ping(ctx context.Context) (string, error) {
+	return "pong", nil
+}
+
 func (r *queryResolver) UsernameAvailable(ctx context.Context, input model.UsernameAvailableInput) (*bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	var b bool
+	u, err := r.client.User.Query().Where(user.Username(input.Username)).All(ctx)
+
+	if err != nil {
+		b = true
+	}
+
+	if u != nil {
+		b = false
+	}
+
+	return &b, nil
 }
 
 func (r *queryResolver) LoginUser(ctx context.Context, input model.LoginUserInput) (*model.AuthPayload, error) {
@@ -76,7 +94,7 @@ func (r *queryResolver) SignupUser(ctx context.Context, input model.SignupUserIn
 }
 
 func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.UserConnection, error) {
-	return r.Client.User.Query().
+	return r.client.User.Query().
 		WithPrograms().
 		Paginate(ctx, after, first, before, last)
 }
@@ -121,13 +139,3 @@ type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type tweetResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *userResolver) Email(ctx context.Context, obj *ent.User) (string, error) {
-	panic(fmt.Errorf("not implemented"))
-}

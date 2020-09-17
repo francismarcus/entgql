@@ -7,7 +7,7 @@ import (
 )
 
 type AuthPayload struct {
-	User  *ent.User `json:"User"`
+	User  *ent.User `json:"user"`
 	Token *string   `json:"token"`
 }
 
@@ -17,28 +17,30 @@ type CreateProgramInput struct {
 }
 
 type CreateUserInput struct {
-	Username string `json:"Username"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type FollowUserInput struct {
-	FollowID int `json:"FollowID"`
-	UserID   int `json:"UserID"`
+	FollowID int `json:"followID"`
+	UserID   int `json:"userID"`
 }
 
 type LoginUserInput struct {
-	Username string `json:"Username"`
-	Password string `json:"Password"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type SignupUserInput struct {
-	Email    string `json:"Email"`
-	Username string `json:"Username"`
-	Password string `json:"Password"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type UnFollowUserInput struct {
-	FollowID int `json:"FollowID"`
-	UserID   int `json:"UserID"`
+	FollowID int `json:"followID"`
+	UserID   int `json:"userID"`
 }
 
 type UsernameAvailableInput struct {

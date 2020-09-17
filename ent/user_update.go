@@ -42,6 +42,12 @@ func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	return uu
 }
 
+// SetPassword sets the password field.
+func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
+	uu.mutation.SetPassword(s)
+	return uu
+}
+
 // SetCreatedAt sets the created_at field.
 func (uu *UserUpdate) SetCreatedAt(t time.Time) *UserUpdate {
 	uu.mutation.SetCreatedAt(t)
@@ -275,6 +281,13 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldEmail,
 		})
 	}
+	if value, ok := uu.mutation.Password(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldPassword,
+		})
+	}
 	if value, ok := uu.mutation.CreatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -468,6 +481,12 @@ func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
 // SetEmail sets the email field.
 func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 	uuo.mutation.SetEmail(s)
+	return uuo
+}
+
+// SetPassword sets the password field.
+func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
+	uuo.mutation.SetPassword(s)
 	return uuo
 }
 
@@ -700,6 +719,13 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (u *User, err error) {
 			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldEmail,
+		})
+	}
+	if value, ok := uuo.mutation.Password(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldPassword,
 		})
 	}
 	if value, ok := uuo.mutation.CreatedAt(); ok {

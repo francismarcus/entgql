@@ -84,6 +84,7 @@ type ComplexityRoot struct {
 	Query struct {
 		LoginUser         func(childComplexity int, input model.LoginUserInput) int
 		Node              func(childComplexity int, id int) int
+		Ping              func(childComplexity int) int
 		SignupUser        func(childComplexity int, input model.SignupUserInput) int
 		UsernameAvailable func(childComplexity int, input model.UsernameAvailableInput) int
 		Users             func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
@@ -124,6 +125,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
+	Ping(ctx context.Context) (string, error)
 	UsernameAvailable(ctx context.Context, input model.UsernameAvailableInput) (*bool, error)
 	LoginUser(ctx context.Context, input model.LoginUserInput) (*model.AuthPayload, error)
 	SignupUser(ctx context.Context, input model.SignupUserInput) (*model.AuthPayload, error)
@@ -163,7 +165,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AuthPayload.Token(childComplexity), true
 
-	case "AuthPayload.User":
+	case "AuthPayload.user":
 		if e.complexity.AuthPayload.User == nil {
 			break
 		}
@@ -311,6 +313,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Node(childComplexity, args["id"].(int)), true
+
+	case "Query.ping":
+		if e.complexity.Query.Ping == nil {
+			break
+		}
+
+		return e.complexity.Query.Ping(childComplexity), true
 
 	case "Query.signupUser":
 		if e.complexity.Query.SignupUser == nil {
@@ -590,7 +599,9 @@ type ProgramConnection {
 }
 
 input createUserInput {
-  Username: String!
+  username: String!
+  email: String!
+  password: String!
 }
 
 input createProgramInput {
@@ -599,28 +610,28 @@ input createProgramInput {
 }
 
 input followUserInput {
-  FollowID: ID!
-  UserID: ID!
+  followID: ID!
+  userID: ID!
 }
 
 input unFollowUserInput {
-  FollowID: ID!
-  UserID: ID!
+  followID: ID!
+  userID: ID!
 }
 
 input loginUserInput {
-  Username: String!
-  Password: String!
+  username: String!
+  password: String!
 }
 
 input signupUserInput {
-  Email: String!
-  Username: String!
-  Password: String!
+  email: String!
+  username: String!
+  password: String!
 }
 
 type AuthPayload {
-  User: User
+  user: User
   token: String
 }
 
@@ -630,6 +641,7 @@ input usernameAvailableInput {
 
 type Query {
   node(id: ID!): Node
+  ping: String!
   usernameAvailable(input: usernameAvailableInput!): Boolean
   loginUser(input: loginUserInput!): AuthPayload
   signupUser(input: signupUserInput!): AuthPayload
@@ -991,7 +1003,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _AuthPayload_User(ctx context.Context, field graphql.CollectedField, obj *model.AuthPayload) (ret graphql.Marshaler) {
+func (ec *executionContext) _AuthPayload_user(ctx context.Context, field graphql.CollectedField, obj *model.AuthPayload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1569,6 +1581,40 @@ func (ec *executionContext) _Query_node(ctx context.Context, field graphql.Colle
 	res := resTmp.(ent.Noder)
 	fc.Result = res
 	return ec.marshalONode2githubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐNoder(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_ping(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Ping(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_usernameAvailable(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3354,11 +3400,27 @@ func (ec *executionContext) unmarshalInputcreateUserInput(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
-		case "Username":
+		case "username":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("Username"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("username"))
 			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "email":
+			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("password"))
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3374,18 +3436,18 @@ func (ec *executionContext) unmarshalInputfollowUserInput(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
-		case "FollowID":
+		case "followID":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("FollowID"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("followID"))
 			it.FollowID, err = ec.unmarshalNID2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "UserID":
+		case "userID":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("UserID"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("userID"))
 			it.UserID, err = ec.unmarshalNID2int(ctx, v)
 			if err != nil {
 				return it, err
@@ -3402,18 +3464,18 @@ func (ec *executionContext) unmarshalInputloginUserInput(ctx context.Context, ob
 
 	for k, v := range asMap {
 		switch k {
-		case "Username":
+		case "username":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("Username"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("username"))
 			it.Username, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "Password":
+		case "password":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("Password"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("password"))
 			it.Password, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
@@ -3430,26 +3492,26 @@ func (ec *executionContext) unmarshalInputsignupUserInput(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
-		case "Email":
+		case "email":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("Email"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("email"))
 			it.Email, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "Username":
+		case "username":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("Username"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("username"))
 			it.Username, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "Password":
+		case "password":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("Password"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("password"))
 			it.Password, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
@@ -3466,18 +3528,18 @@ func (ec *executionContext) unmarshalInputunFollowUserInput(ctx context.Context,
 
 	for k, v := range asMap {
 		switch k {
-		case "FollowID":
+		case "followID":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("FollowID"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("followID"))
 			it.FollowID, err = ec.unmarshalNID2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "UserID":
+		case "userID":
 			var err error
 
-			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("UserID"))
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("userID"))
 			it.UserID, err = ec.unmarshalNID2int(ctx, v)
 			if err != nil {
 				return it, err
@@ -3551,8 +3613,8 @@ func (ec *executionContext) _AuthPayload(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("AuthPayload")
-		case "User":
-			out.Values[i] = ec._AuthPayload_User(ctx, field, obj)
+		case "user":
+			out.Values[i] = ec._AuthPayload_user(ctx, field, obj)
 		case "token":
 			out.Values[i] = ec._AuthPayload_token(ctx, field, obj)
 		default:
@@ -3750,6 +3812,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_node(ctx, field)
+				return res
+			})
+		case "ping":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_ping(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "usernameAvailable":

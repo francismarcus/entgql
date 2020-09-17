@@ -34,6 +34,12 @@ func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	return uc
 }
 
+// SetPassword sets the password field.
+func (uc *UserCreate) SetPassword(s string) *UserCreate {
+	uc.mutation.SetPassword(s)
+	return uc
+}
+
 // SetCreatedAt sets the created_at field.
 func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
 	uc.mutation.SetCreatedAt(t)
@@ -175,6 +181,9 @@ func (uc *UserCreate) preSave() error {
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New("ent: missing required field \"email\"")}
 	}
+	if _, ok := uc.mutation.Password(); !ok {
+		return &ValidationError{Name: "password", err: errors.New("ent: missing required field \"password\"")}
+	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		uc.mutation.SetCreatedAt(v)
@@ -225,6 +234,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldEmail,
 		})
 		u.Email = value
+	}
+	if value, ok := uc.mutation.Password(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldPassword,
+		})
+		u.Password = value
 	}
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

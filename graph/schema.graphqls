@@ -63,7 +63,9 @@ type ProgramConnection {
 }
 
 input createUserInput {
-  Username: String!
+  username: String!
+  email: String!
+  password: String!
 }
 
 input createProgramInput {
@@ -72,28 +74,28 @@ input createProgramInput {
 }
 
 input followUserInput {
-  FollowID: ID!
-  UserID: ID!
+  followID: ID!
+  userID: ID!
 }
 
 input unFollowUserInput {
-  FollowID: ID!
-  UserID: ID!
+  followID: ID!
+  userID: ID!
 }
 
 input loginUserInput {
-  Username: String!
-  Password: String!
+  username: String!
+  password: String!
 }
 
 input signupUserInput {
-  Email: String!
-  Username: String!
-  Password: String!
+  email: String!
+  username: String!
+  password: String!
 }
 
 type AuthPayload {
-  User: User
+  user: User
   token: String
 }
 
@@ -103,6 +105,7 @@ input usernameAvailableInput {
 
 type Query {
   node(id: ID!): Node
+  ping: String!
   usernameAvailable(input: usernameAvailableInput!): Boolean
   loginUser(input: loginUserInput!): AuthPayload
   signupUser(input: signupUserInput!): AuthPayload

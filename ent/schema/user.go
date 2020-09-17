@@ -20,8 +20,10 @@ func (User) Fields() []ent.Field {
 			Unique(),
 		field.String("email").
 			Unique(),
+		field.String("password"),
 		field.Time("created_at").
-			Default(time.Now),
+			Default(time.Now).
+			Immutable(),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now),

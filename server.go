@@ -37,7 +37,9 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{Client: client}}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(
+		graph.New(client),
+	))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)

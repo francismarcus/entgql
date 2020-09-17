@@ -68,6 +68,48 @@ func (uc *UserCreate) SetNillableUpdatedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
+// SetFollowingCount sets the following_count field.
+func (uc *UserCreate) SetFollowingCount(i int) *UserCreate {
+	uc.mutation.SetFollowingCount(i)
+	return uc
+}
+
+// SetNillableFollowingCount sets the following_count field if the given value is not nil.
+func (uc *UserCreate) SetNillableFollowingCount(i *int) *UserCreate {
+	if i != nil {
+		uc.SetFollowingCount(*i)
+	}
+	return uc
+}
+
+// SetFollowersCount sets the followers_count field.
+func (uc *UserCreate) SetFollowersCount(i int) *UserCreate {
+	uc.mutation.SetFollowersCount(i)
+	return uc
+}
+
+// SetNillableFollowersCount sets the followers_count field if the given value is not nil.
+func (uc *UserCreate) SetNillableFollowersCount(i *int) *UserCreate {
+	if i != nil {
+		uc.SetFollowersCount(*i)
+	}
+	return uc
+}
+
+// SetTweetsCount sets the tweets_count field.
+func (uc *UserCreate) SetTweetsCount(i int) *UserCreate {
+	uc.mutation.SetTweetsCount(i)
+	return uc
+}
+
+// SetNillableTweetsCount sets the tweets_count field if the given value is not nil.
+func (uc *UserCreate) SetNillableTweetsCount(i *int) *UserCreate {
+	if i != nil {
+		uc.SetTweetsCount(*i)
+	}
+	return uc
+}
+
 // AddFollowerIDs adds the followers edge to User by ids.
 func (uc *UserCreate) AddFollowerIDs(ids ...int) *UserCreate {
 	uc.mutation.AddFollowerIDs(ids...)
@@ -192,6 +234,18 @@ func (uc *UserCreate) preSave() error {
 		v := user.DefaultUpdatedAt()
 		uc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := uc.mutation.FollowingCount(); !ok {
+		v := user.DefaultFollowingCount
+		uc.mutation.SetFollowingCount(v)
+	}
+	if _, ok := uc.mutation.FollowersCount(); !ok {
+		v := user.DefaultFollowersCount
+		uc.mutation.SetFollowersCount(v)
+	}
+	if _, ok := uc.mutation.TweetsCount(); !ok {
+		v := user.DefaultTweetsCount
+		uc.mutation.SetTweetsCount(v)
+	}
 	return nil
 }
 
@@ -258,6 +312,30 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldUpdatedAt,
 		})
 		u.UpdatedAt = value
+	}
+	if value, ok := uc.mutation.FollowingCount(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowingCount,
+		})
+		u.FollowingCount = value
+	}
+	if value, ok := uc.mutation.FollowersCount(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowersCount,
+		})
+		u.FollowersCount = value
+	}
+	if value, ok := uc.mutation.TweetsCount(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldTweetsCount,
+		})
+		u.TweetsCount = value
 	}
 	if nodes := uc.mutation.FollowersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

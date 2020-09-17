@@ -128,6 +128,27 @@ func UpdatedAt(v time.Time) predicate.User {
 	})
 }
 
+// FollowingCount applies equality check predicate on the "following_count" field. It's identical to FollowingCountEQ.
+func FollowingCount(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldFollowingCount), v))
+	})
+}
+
+// FollowersCount applies equality check predicate on the "followers_count" field. It's identical to FollowersCountEQ.
+func FollowersCount(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldFollowersCount), v))
+	})
+}
+
+// TweetsCount applies equality check predicate on the "tweets_count" field. It's identical to TweetsCountEQ.
+func TweetsCount(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTweetsCount), v))
+	})
+}
+
 // UsernameEQ applies the EQ predicate on the "username" field.
 func UsernameEQ(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -610,6 +631,234 @@ func UpdatedAtLT(v time.Time) predicate.User {
 func UpdatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// FollowingCountEQ applies the EQ predicate on the "following_count" field.
+func FollowingCountEQ(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldFollowingCount), v))
+	})
+}
+
+// FollowingCountNEQ applies the NEQ predicate on the "following_count" field.
+func FollowingCountNEQ(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldFollowingCount), v))
+	})
+}
+
+// FollowingCountIn applies the In predicate on the "following_count" field.
+func FollowingCountIn(vs ...int) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldFollowingCount), v...))
+	})
+}
+
+// FollowingCountNotIn applies the NotIn predicate on the "following_count" field.
+func FollowingCountNotIn(vs ...int) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldFollowingCount), v...))
+	})
+}
+
+// FollowingCountGT applies the GT predicate on the "following_count" field.
+func FollowingCountGT(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldFollowingCount), v))
+	})
+}
+
+// FollowingCountGTE applies the GTE predicate on the "following_count" field.
+func FollowingCountGTE(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldFollowingCount), v))
+	})
+}
+
+// FollowingCountLT applies the LT predicate on the "following_count" field.
+func FollowingCountLT(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldFollowingCount), v))
+	})
+}
+
+// FollowingCountLTE applies the LTE predicate on the "following_count" field.
+func FollowingCountLTE(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldFollowingCount), v))
+	})
+}
+
+// FollowersCountEQ applies the EQ predicate on the "followers_count" field.
+func FollowersCountEQ(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldFollowersCount), v))
+	})
+}
+
+// FollowersCountNEQ applies the NEQ predicate on the "followers_count" field.
+func FollowersCountNEQ(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldFollowersCount), v))
+	})
+}
+
+// FollowersCountIn applies the In predicate on the "followers_count" field.
+func FollowersCountIn(vs ...int) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldFollowersCount), v...))
+	})
+}
+
+// FollowersCountNotIn applies the NotIn predicate on the "followers_count" field.
+func FollowersCountNotIn(vs ...int) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldFollowersCount), v...))
+	})
+}
+
+// FollowersCountGT applies the GT predicate on the "followers_count" field.
+func FollowersCountGT(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldFollowersCount), v))
+	})
+}
+
+// FollowersCountGTE applies the GTE predicate on the "followers_count" field.
+func FollowersCountGTE(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldFollowersCount), v))
+	})
+}
+
+// FollowersCountLT applies the LT predicate on the "followers_count" field.
+func FollowersCountLT(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldFollowersCount), v))
+	})
+}
+
+// FollowersCountLTE applies the LTE predicate on the "followers_count" field.
+func FollowersCountLTE(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldFollowersCount), v))
+	})
+}
+
+// TweetsCountEQ applies the EQ predicate on the "tweets_count" field.
+func TweetsCountEQ(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTweetsCount), v))
+	})
+}
+
+// TweetsCountNEQ applies the NEQ predicate on the "tweets_count" field.
+func TweetsCountNEQ(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldTweetsCount), v))
+	})
+}
+
+// TweetsCountIn applies the In predicate on the "tweets_count" field.
+func TweetsCountIn(vs ...int) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldTweetsCount), v...))
+	})
+}
+
+// TweetsCountNotIn applies the NotIn predicate on the "tweets_count" field.
+func TweetsCountNotIn(vs ...int) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldTweetsCount), v...))
+	})
+}
+
+// TweetsCountGT applies the GT predicate on the "tweets_count" field.
+func TweetsCountGT(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldTweetsCount), v))
+	})
+}
+
+// TweetsCountGTE applies the GTE predicate on the "tweets_count" field.
+func TweetsCountGTE(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldTweetsCount), v))
+	})
+}
+
+// TweetsCountLT applies the LT predicate on the "tweets_count" field.
+func TweetsCountLT(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldTweetsCount), v))
+	})
+}
+
+// TweetsCountLTE applies the LTE predicate on the "tweets_count" field.
+func TweetsCountLTE(v int) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldTweetsCount), v))
 	})
 }
 

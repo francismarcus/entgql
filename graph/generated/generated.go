@@ -95,15 +95,29 @@ type ComplexityRoot struct {
 		User func(childComplexity int) int
 	}
 
+	TweetConnection struct {
+		Edges    func(childComplexity int) int
+		PageInfo func(childComplexity int) int
+	}
+
+	TweetEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	User struct {
-		CreatedAt func(childComplexity int) int
-		Email     func(childComplexity int) int
-		Followers func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
-		Follows   func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
-		ID        func(childComplexity int) int
-		Programs  func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
-		UpdatedAt func(childComplexity int) int
-		Username  func(childComplexity int) int
+		CreatedAt      func(childComplexity int) int
+		Email          func(childComplexity int) int
+		Followers      func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
+		FollowersCount func(childComplexity int) int
+		FollowingCount func(childComplexity int) int
+		Follows        func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
+		ID             func(childComplexity int) int
+		Programs       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
+		Tweets         func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
+		TweetsCount    func(childComplexity int) int
+		UpdatedAt      func(childComplexity int) int
+		Username       func(childComplexity int) int
 	}
 
 	UserConnection struct {
@@ -141,6 +155,7 @@ type UserResolver interface {
 	Programs(ctx context.Context, obj *ent.User, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.ProgramConnection, error)
 	Followers(ctx context.Context, obj *ent.User, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.UserConnection, error)
 	Follows(ctx context.Context, obj *ent.User, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.UserConnection, error)
+	Tweets(ctx context.Context, obj *ent.User, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.TweetConnection, error)
 }
 
 type executableSchema struct {
@@ -371,6 +386,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tweet.User(childComplexity), true
 
+	case "TweetConnection.edges":
+		if e.complexity.TweetConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.TweetConnection.Edges(childComplexity), true
+
+	case "TweetConnection.pageInfo":
+		if e.complexity.TweetConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.TweetConnection.PageInfo(childComplexity), true
+
+	case "TweetEdge.cursor":
+		if e.complexity.TweetEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.TweetEdge.Cursor(childComplexity), true
+
+	case "TweetEdge.node":
+		if e.complexity.TweetEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.TweetEdge.Node(childComplexity), true
+
 	case "User.created_at":
 		if e.complexity.User.CreatedAt == nil {
 			break
@@ -396,6 +439,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Followers(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int)), true
+
+	case "User.followers_count":
+		if e.complexity.User.FollowersCount == nil {
+			break
+		}
+
+		return e.complexity.User.FollowersCount(childComplexity), true
+
+	case "User.following_count":
+		if e.complexity.User.FollowingCount == nil {
+			break
+		}
+
+		return e.complexity.User.FollowingCount(childComplexity), true
 
 	case "User.follows":
 		if e.complexity.User.Follows == nil {
@@ -427,6 +484,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Programs(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int)), true
+
+	case "User.tweets":
+		if e.complexity.User.Tweets == nil {
+			break
+		}
+
+		args, err := ec.field_User_tweets_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.User.Tweets(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int)), true
+
+	case "User.tweets_count":
+		if e.complexity.User.TweetsCount == nil {
+			break
+		}
+
+		return e.complexity.User.TweetsCount(childComplexity), true
 
 	case "User.updated_at":
 		if e.complexity.User.UpdatedAt == nil {
@@ -552,6 +628,16 @@ type Tweet implements Node {
   user: User
 }
 
+type TweetEdge {
+  node: Tweet
+  cursor: Cursor
+}
+
+type TweetConnection {
+  pageInfo: PageInfo
+  edges: [TweetEdge]
+}
+
 type User implements Node {
   id: ID!
   created_at: String!
@@ -571,6 +657,10 @@ type User implements Node {
     last: Int
   ): UserConnection
   follows(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
+  tweets(after: Cursor, first: Int, before: Cursor, last: Int): TweetConnection
+  followers_count: Int
+  following_count: Int
+  tweets_count: Int
 }
 
 type UserEdge {
@@ -924,6 +1014,48 @@ func (ec *executionContext) field_User_follows_args(ctx context.Context, rawArgs
 }
 
 func (ec *executionContext) field_User_programs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_User_tweets_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *ent.Cursor
@@ -1903,6 +2035,130 @@ func (ec *executionContext) _Tweet_user(ctx context.Context, field graphql.Colle
 	return ec.marshalOUser2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐUser(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _TweetConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.TweetConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "TweetConnection",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalOPageInfo2githubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TweetConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.TweetConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "TweetConnection",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.TweetEdge)
+	fc.Result = res
+	return ec.marshalOTweetEdge2ᚕᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐTweetEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TweetEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.TweetEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "TweetEdge",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Tweet)
+	fc.Result = res
+	return ec.marshalOTweet2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐTweet(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TweetEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.TweetEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "TweetEdge",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalOCursor2githubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐCursor(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2185,6 +2441,137 @@ func (ec *executionContext) _User_follows(ctx context.Context, field graphql.Col
 	res := resTmp.(*ent.UserConnection)
 	fc.Result = res
 	return ec.marshalOUserConnection2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐUserConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_tweets(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_User_tweets_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Tweets(rctx, obj, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.TweetConnection)
+	fc.Result = res
+	return ec.marshalOTweetConnection2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐTweetConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_followers_count(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FollowersCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalOInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_following_count(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FollowingCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalOInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_tweets_count(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TweetsCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalOInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _UserConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.UserConnection) (ret graphql.Marshaler) {
@@ -3925,6 +4312,58 @@ func (ec *executionContext) _Tweet(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var tweetConnectionImplementors = []string{"TweetConnection"}
+
+func (ec *executionContext) _TweetConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.TweetConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tweetConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TweetConnection")
+		case "pageInfo":
+			out.Values[i] = ec._TweetConnection_pageInfo(ctx, field, obj)
+		case "edges":
+			out.Values[i] = ec._TweetConnection_edges(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var tweetEdgeImplementors = []string{"TweetEdge"}
+
+func (ec *executionContext) _TweetEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.TweetEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tweetEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TweetEdge")
+		case "node":
+			out.Values[i] = ec._TweetEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._TweetEdge_cursor(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var userImplementors = []string{"User", "Node"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *ent.User) graphql.Marshaler {
@@ -4012,6 +4451,23 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				res = ec._User_follows(ctx, field, obj)
 				return res
 			})
+		case "tweets":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_tweets(ctx, field, obj)
+				return res
+			})
+		case "followers_count":
+			out.Values[i] = ec._User_followers_count(ctx, field, obj)
+		case "following_count":
+			out.Values[i] = ec._User_following_count(ctx, field, obj)
+		case "tweets_count":
+			out.Values[i] = ec._User_tweets_count(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4714,6 +5170,15 @@ func (ec *executionContext) marshalOCursor2ᚖgithubᚗcomᚋfrancismarcusᚋent
 	return v
 }
 
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.WrapErrorWithInputPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	return graphql.MarshalInt(v)
+}
+
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -4823,6 +5288,67 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) marshalOTweet2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐTweet(ctx context.Context, sel ast.SelectionSet, v *ent.Tweet) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Tweet(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOTweetConnection2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐTweetConnection(ctx context.Context, sel ast.SelectionSet, v *ent.TweetConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TweetConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOTweetEdge2ᚕᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐTweetEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.TweetEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTweetEdge2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐTweetEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOTweetEdge2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐTweetEdge(ctx context.Context, sel ast.SelectionSet, v *ent.TweetEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TweetEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋfrancismarcusᚋentgqlᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {

@@ -21,6 +21,12 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldFollowingCount holds the string denoting the following_count field in the database.
+	FieldFollowingCount = "following_count"
+	// FieldFollowersCount holds the string denoting the followers_count field in the database.
+	FieldFollowersCount = "followers_count"
+	// FieldTweetsCount holds the string denoting the tweets_count field in the database.
+	FieldTweetsCount = "tweets_count"
 
 	// EdgeFollowers holds the string denoting the followers edge name in mutations.
 	EdgeFollowers = "followers"
@@ -61,6 +67,9 @@ var Columns = []string{
 	FieldPassword,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldFollowingCount,
+	FieldFollowersCount,
+	FieldTweetsCount,
 }
 
 var (
@@ -79,4 +88,10 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultFollowingCount holds the default value on creation for the following_count field.
+	DefaultFollowingCount int
+	// DefaultFollowersCount holds the default value on creation for the followers_count field.
+	DefaultFollowersCount int
+	// DefaultTweetsCount holds the default value on creation for the tweets_count field.
+	DefaultTweetsCount int
 )

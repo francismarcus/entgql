@@ -32,4 +32,16 @@ func init() {
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// userDescFollowingCount is the schema descriptor for following_count field.
+	userDescFollowingCount := userFields[5].Descriptor()
+	// user.DefaultFollowingCount holds the default value on creation for the following_count field.
+	user.DefaultFollowingCount = userDescFollowingCount.Default.(int)
+	// userDescFollowersCount is the schema descriptor for followers_count field.
+	userDescFollowersCount := userFields[6].Descriptor()
+	// user.DefaultFollowersCount holds the default value on creation for the followers_count field.
+	user.DefaultFollowersCount = userDescFollowersCount.Default.(int)
+	// userDescTweetsCount is the schema descriptor for tweets_count field.
+	userDescTweetsCount := userFields[7].Descriptor()
+	// user.DefaultTweetsCount holds the default value on creation for the tweets_count field.
+	user.DefaultTweetsCount = userDescTweetsCount.Default.(int)
 }

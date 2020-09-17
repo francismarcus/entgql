@@ -26,6 +26,12 @@ type User struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// FollowingCount holds the value of the "following_count" field.
+	FollowingCount int `json:"following_count,omitempty"`
+	// FollowersCount holds the value of the "followers_count" field.
+	FollowersCount int `json:"followers_count,omitempty"`
+	// TweetsCount holds the value of the "tweets_count" field.
+	TweetsCount int `json:"tweets_count,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges UserEdges `json:"edges"`
@@ -91,6 +97,9 @@ func (*User) scanValues() []interface{} {
 		&sql.NullString{}, // password
 		&sql.NullTime{},   // created_at
 		&sql.NullTime{},   // updated_at
+		&sql.NullInt64{},  // following_count
+		&sql.NullInt64{},  // followers_count
+		&sql.NullInt64{},  // tweets_count
 	}
 }
 
@@ -130,6 +139,21 @@ func (u *User) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field updated_at", values[4])
 	} else if value.Valid {
 		u.UpdatedAt = value.Time
+	}
+	if value, ok := values[5].(*sql.NullInt64); !ok {
+		return fmt.Errorf("unexpected type %T for field following_count", values[5])
+	} else if value.Valid {
+		u.FollowingCount = int(value.Int64)
+	}
+	if value, ok := values[6].(*sql.NullInt64); !ok {
+		return fmt.Errorf("unexpected type %T for field followers_count", values[6])
+	} else if value.Valid {
+		u.FollowersCount = int(value.Int64)
+	}
+	if value, ok := values[7].(*sql.NullInt64); !ok {
+		return fmt.Errorf("unexpected type %T for field tweets_count", values[7])
+	} else if value.Valid {
+		u.TweetsCount = int(value.Int64)
 	}
 	return nil
 }
@@ -187,6 +211,12 @@ func (u *User) String() string {
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")
 	builder.WriteString(u.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", following_count=")
+	builder.WriteString(fmt.Sprintf("%v", u.FollowingCount))
+	builder.WriteString(", followers_count=")
+	builder.WriteString(fmt.Sprintf("%v", u.FollowersCount))
+	builder.WriteString(", tweets_count=")
+	builder.WriteString(fmt.Sprintf("%v", u.TweetsCount))
 	builder.WriteByte(')')
 	return builder.String()
 }

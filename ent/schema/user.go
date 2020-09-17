@@ -27,6 +27,12 @@ func (User) Fields() []ent.Field {
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now),
+		field.Int("following_count").
+			Default(0),
+		field.Int("followers_count").
+			Default(0),
+		field.Int("tweets_count").
+			Default(0),
 	}
 }
 

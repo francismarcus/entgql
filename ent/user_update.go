@@ -48,23 +48,72 @@ func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
 	return uu
 }
 
-// SetCreatedAt sets the created_at field.
-func (uu *UserUpdate) SetCreatedAt(t time.Time) *UserUpdate {
-	uu.mutation.SetCreatedAt(t)
+// SetUpdatedAt sets the updated_at field.
+func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
+	uu.mutation.SetUpdatedAt(t)
 	return uu
 }
 
-// SetNillableCreatedAt sets the created_at field if the given value is not nil.
-func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
-	if t != nil {
-		uu.SetCreatedAt(*t)
+// SetFollowingCount sets the following_count field.
+func (uu *UserUpdate) SetFollowingCount(i int) *UserUpdate {
+	uu.mutation.ResetFollowingCount()
+	uu.mutation.SetFollowingCount(i)
+	return uu
+}
+
+// SetNillableFollowingCount sets the following_count field if the given value is not nil.
+func (uu *UserUpdate) SetNillableFollowingCount(i *int) *UserUpdate {
+	if i != nil {
+		uu.SetFollowingCount(*i)
 	}
 	return uu
 }
 
-// SetUpdatedAt sets the updated_at field.
-func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
-	uu.mutation.SetUpdatedAt(t)
+// AddFollowingCount adds i to following_count.
+func (uu *UserUpdate) AddFollowingCount(i int) *UserUpdate {
+	uu.mutation.AddFollowingCount(i)
+	return uu
+}
+
+// SetFollowersCount sets the followers_count field.
+func (uu *UserUpdate) SetFollowersCount(i int) *UserUpdate {
+	uu.mutation.ResetFollowersCount()
+	uu.mutation.SetFollowersCount(i)
+	return uu
+}
+
+// SetNillableFollowersCount sets the followers_count field if the given value is not nil.
+func (uu *UserUpdate) SetNillableFollowersCount(i *int) *UserUpdate {
+	if i != nil {
+		uu.SetFollowersCount(*i)
+	}
+	return uu
+}
+
+// AddFollowersCount adds i to followers_count.
+func (uu *UserUpdate) AddFollowersCount(i int) *UserUpdate {
+	uu.mutation.AddFollowersCount(i)
+	return uu
+}
+
+// SetTweetsCount sets the tweets_count field.
+func (uu *UserUpdate) SetTweetsCount(i int) *UserUpdate {
+	uu.mutation.ResetTweetsCount()
+	uu.mutation.SetTweetsCount(i)
+	return uu
+}
+
+// SetNillableTweetsCount sets the tweets_count field if the given value is not nil.
+func (uu *UserUpdate) SetNillableTweetsCount(i *int) *UserUpdate {
+	if i != nil {
+		uu.SetTweetsCount(*i)
+	}
+	return uu
+}
+
+// AddTweetsCount adds i to tweets_count.
+func (uu *UserUpdate) AddTweetsCount(i int) *UserUpdate {
+	uu.mutation.AddTweetsCount(i)
 	return uu
 }
 
@@ -288,18 +337,53 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldPassword,
 		})
 	}
-	if value, ok := uu.mutation.CreatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: user.FieldCreatedAt,
-		})
-	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: user.FieldUpdatedAt,
+		})
+	}
+	if value, ok := uu.mutation.FollowingCount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowingCount,
+		})
+	}
+	if value, ok := uu.mutation.AddedFollowingCount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowingCount,
+		})
+	}
+	if value, ok := uu.mutation.FollowersCount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowersCount,
+		})
+	}
+	if value, ok := uu.mutation.AddedFollowersCount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowersCount,
+		})
+	}
+	if value, ok := uu.mutation.TweetsCount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldTweetsCount,
+		})
+	}
+	if value, ok := uu.mutation.AddedTweetsCount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldTweetsCount,
 		})
 	}
 	if nodes := uu.mutation.RemovedFollowersIDs(); len(nodes) > 0 {
@@ -490,23 +574,72 @@ func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
 	return uuo
 }
 
-// SetCreatedAt sets the created_at field.
-func (uuo *UserUpdateOne) SetCreatedAt(t time.Time) *UserUpdateOne {
-	uuo.mutation.SetCreatedAt(t)
+// SetUpdatedAt sets the updated_at field.
+func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetUpdatedAt(t)
 	return uuo
 }
 
-// SetNillableCreatedAt sets the created_at field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableCreatedAt(t *time.Time) *UserUpdateOne {
-	if t != nil {
-		uuo.SetCreatedAt(*t)
+// SetFollowingCount sets the following_count field.
+func (uuo *UserUpdateOne) SetFollowingCount(i int) *UserUpdateOne {
+	uuo.mutation.ResetFollowingCount()
+	uuo.mutation.SetFollowingCount(i)
+	return uuo
+}
+
+// SetNillableFollowingCount sets the following_count field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableFollowingCount(i *int) *UserUpdateOne {
+	if i != nil {
+		uuo.SetFollowingCount(*i)
 	}
 	return uuo
 }
 
-// SetUpdatedAt sets the updated_at field.
-func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
-	uuo.mutation.SetUpdatedAt(t)
+// AddFollowingCount adds i to following_count.
+func (uuo *UserUpdateOne) AddFollowingCount(i int) *UserUpdateOne {
+	uuo.mutation.AddFollowingCount(i)
+	return uuo
+}
+
+// SetFollowersCount sets the followers_count field.
+func (uuo *UserUpdateOne) SetFollowersCount(i int) *UserUpdateOne {
+	uuo.mutation.ResetFollowersCount()
+	uuo.mutation.SetFollowersCount(i)
+	return uuo
+}
+
+// SetNillableFollowersCount sets the followers_count field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableFollowersCount(i *int) *UserUpdateOne {
+	if i != nil {
+		uuo.SetFollowersCount(*i)
+	}
+	return uuo
+}
+
+// AddFollowersCount adds i to followers_count.
+func (uuo *UserUpdateOne) AddFollowersCount(i int) *UserUpdateOne {
+	uuo.mutation.AddFollowersCount(i)
+	return uuo
+}
+
+// SetTweetsCount sets the tweets_count field.
+func (uuo *UserUpdateOne) SetTweetsCount(i int) *UserUpdateOne {
+	uuo.mutation.ResetTweetsCount()
+	uuo.mutation.SetTweetsCount(i)
+	return uuo
+}
+
+// SetNillableTweetsCount sets the tweets_count field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableTweetsCount(i *int) *UserUpdateOne {
+	if i != nil {
+		uuo.SetTweetsCount(*i)
+	}
+	return uuo
+}
+
+// AddTweetsCount adds i to tweets_count.
+func (uuo *UserUpdateOne) AddTweetsCount(i int) *UserUpdateOne {
+	uuo.mutation.AddTweetsCount(i)
 	return uuo
 }
 
@@ -728,18 +861,53 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (u *User, err error) {
 			Column: user.FieldPassword,
 		})
 	}
-	if value, ok := uuo.mutation.CreatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: user.FieldCreatedAt,
-		})
-	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: user.FieldUpdatedAt,
+		})
+	}
+	if value, ok := uuo.mutation.FollowingCount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowingCount,
+		})
+	}
+	if value, ok := uuo.mutation.AddedFollowingCount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowingCount,
+		})
+	}
+	if value, ok := uuo.mutation.FollowersCount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowersCount,
+		})
+	}
+	if value, ok := uuo.mutation.AddedFollowersCount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldFollowersCount,
+		})
+	}
+	if value, ok := uuo.mutation.TweetsCount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldTweetsCount,
+		})
+	}
+	if value, ok := uuo.mutation.AddedTweetsCount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: user.FieldTweetsCount,
 		})
 	}
 	if nodes := uuo.mutation.RemovedFollowersIDs(); len(nodes) > 0 {

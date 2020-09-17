@@ -43,15 +43,17 @@ func (r *mutationResolver) CreateProgram(ctx context.Context, input model.Create
 }
 
 func (r *mutationResolver) FollowUser(ctx context.Context, input model.FollowUserInput) (*ent.User, error) {
-	u := r.client.User.UpdateOneID(input.UserID).AddFollowingIDs(input.FollowID).SaveX(ctx)
+	f := r.client.User.UpdateOneID(input.FollowID).AddFollowerIDs(input.UserID).AddFollowersCount(1).SaveX(ctx)
+	r.client.User.UpdateOneID(input.UserID).AddFollowingCount(1).SaveX(ctx)
 
-	return u, nil
+	return f, nil
 }
 
 func (r *mutationResolver) UnFollowUser(ctx context.Context, input model.UnFollowUserInput) (*ent.User, error) {
-	u := r.client.User.UpdateOneID(input.UserID).RemoveFollowingIDs(input.FollowID).SaveX(ctx)
+	f := r.client.User.UpdateOneID(input.FollowID).RemoveFollowerIDs(input.UserID).AddFollowersCount(-1).SaveX(ctx)
+	r.client.User.UpdateOneID(input.UserID).AddFollowingCount(-1).SaveX(ctx)
 
-	return u, nil
+	return f, nil
 }
 
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
@@ -121,6 +123,10 @@ func (r *userResolver) Followers(ctx context.Context, obj *ent.User, after *ent.
 
 func (r *userResolver) Follows(ctx context.Context, obj *ent.User, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.UserConnection, error) {
 	return obj.QueryFollowing().Paginate(ctx, after, first, before, last)
+}
+
+func (r *userResolver) Tweets(ctx context.Context, obj *ent.User, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.TweetConnection, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

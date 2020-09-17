@@ -16,6 +16,16 @@ type Tweet implements Node {
   user: User
 }
 
+type TweetEdge {
+  node: Tweet
+  cursor: Cursor
+}
+
+type TweetConnection {
+  pageInfo: PageInfo
+  edges: [TweetEdge]
+}
+
 type User implements Node {
   id: ID!
   created_at: String!
@@ -35,6 +45,10 @@ type User implements Node {
     last: Int
   ): UserConnection
   follows(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
+  tweets(after: Cursor, first: Int, before: Cursor, last: Int): TweetConnection
+  followers_count: Int
+  following_count: Int
+  tweets_count: Int
 }
 
 type UserEdge {

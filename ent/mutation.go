@@ -812,25 +812,31 @@ func (m *TweetMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type UserMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *int
-	username         *string
-	email            *string
-	password         *string
-	created_at       *time.Time
-	updated_at       *time.Time
-	clearedFields    map[string]struct{}
-	followers        map[int]struct{}
-	removedfollowers map[int]struct{}
-	following        map[int]struct{}
-	removedfollowing map[int]struct{}
-	programs         map[int]struct{}
-	removedprograms  map[int]struct{}
-	tweets           map[int]struct{}
-	removedtweets    map[int]struct{}
-	done             bool
-	oldValue         func(context.Context) (*User, error)
+	op                 Op
+	typ                string
+	id                 *int
+	username           *string
+	email              *string
+	password           *string
+	created_at         *time.Time
+	updated_at         *time.Time
+	following_count    *int
+	addfollowing_count *int
+	followers_count    *int
+	addfollowers_count *int
+	tweets_count       *int
+	addtweets_count    *int
+	clearedFields      map[string]struct{}
+	followers          map[int]struct{}
+	removedfollowers   map[int]struct{}
+	following          map[int]struct{}
+	removedfollowing   map[int]struct{}
+	programs           map[int]struct{}
+	removedprograms    map[int]struct{}
+	tweets             map[int]struct{}
+	removedtweets      map[int]struct{}
+	done               bool
+	oldValue           func(context.Context) (*User, error)
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -1097,6 +1103,177 @@ func (m *UserMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetFollowingCount sets the following_count field.
+func (m *UserMutation) SetFollowingCount(i int) {
+	m.following_count = &i
+	m.addfollowing_count = nil
+}
+
+// FollowingCount returns the following_count value in the mutation.
+func (m *UserMutation) FollowingCount() (r int, exists bool) {
+	v := m.following_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFollowingCount returns the old following_count value of the User.
+// If the User object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *UserMutation) OldFollowingCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFollowingCount is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFollowingCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFollowingCount: %w", err)
+	}
+	return oldValue.FollowingCount, nil
+}
+
+// AddFollowingCount adds i to following_count.
+func (m *UserMutation) AddFollowingCount(i int) {
+	if m.addfollowing_count != nil {
+		*m.addfollowing_count += i
+	} else {
+		m.addfollowing_count = &i
+	}
+}
+
+// AddedFollowingCount returns the value that was added to the following_count field in this mutation.
+func (m *UserMutation) AddedFollowingCount() (r int, exists bool) {
+	v := m.addfollowing_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFollowingCount reset all changes of the "following_count" field.
+func (m *UserMutation) ResetFollowingCount() {
+	m.following_count = nil
+	m.addfollowing_count = nil
+}
+
+// SetFollowersCount sets the followers_count field.
+func (m *UserMutation) SetFollowersCount(i int) {
+	m.followers_count = &i
+	m.addfollowers_count = nil
+}
+
+// FollowersCount returns the followers_count value in the mutation.
+func (m *UserMutation) FollowersCount() (r int, exists bool) {
+	v := m.followers_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFollowersCount returns the old followers_count value of the User.
+// If the User object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *UserMutation) OldFollowersCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFollowersCount is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFollowersCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFollowersCount: %w", err)
+	}
+	return oldValue.FollowersCount, nil
+}
+
+// AddFollowersCount adds i to followers_count.
+func (m *UserMutation) AddFollowersCount(i int) {
+	if m.addfollowers_count != nil {
+		*m.addfollowers_count += i
+	} else {
+		m.addfollowers_count = &i
+	}
+}
+
+// AddedFollowersCount returns the value that was added to the followers_count field in this mutation.
+func (m *UserMutation) AddedFollowersCount() (r int, exists bool) {
+	v := m.addfollowers_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFollowersCount reset all changes of the "followers_count" field.
+func (m *UserMutation) ResetFollowersCount() {
+	m.followers_count = nil
+	m.addfollowers_count = nil
+}
+
+// SetTweetsCount sets the tweets_count field.
+func (m *UserMutation) SetTweetsCount(i int) {
+	m.tweets_count = &i
+	m.addtweets_count = nil
+}
+
+// TweetsCount returns the tweets_count value in the mutation.
+func (m *UserMutation) TweetsCount() (r int, exists bool) {
+	v := m.tweets_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTweetsCount returns the old tweets_count value of the User.
+// If the User object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *UserMutation) OldTweetsCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTweetsCount is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTweetsCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTweetsCount: %w", err)
+	}
+	return oldValue.TweetsCount, nil
+}
+
+// AddTweetsCount adds i to tweets_count.
+func (m *UserMutation) AddTweetsCount(i int) {
+	if m.addtweets_count != nil {
+		*m.addtweets_count += i
+	} else {
+		m.addtweets_count = &i
+	}
+}
+
+// AddedTweetsCount returns the value that was added to the tweets_count field in this mutation.
+func (m *UserMutation) AddedTweetsCount() (r int, exists bool) {
+	v := m.addtweets_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTweetsCount reset all changes of the "tweets_count" field.
+func (m *UserMutation) ResetTweetsCount() {
+	m.tweets_count = nil
+	m.addtweets_count = nil
+}
+
 // AddFollowerIDs adds the followers edge to User by ids.
 func (m *UserMutation) AddFollowerIDs(ids ...int) {
 	if m.followers == nil {
@@ -1279,7 +1456,7 @@ func (m *UserMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 8)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
@@ -1294,6 +1471,15 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.updated_at != nil {
 		fields = append(fields, user.FieldUpdatedAt)
+	}
+	if m.following_count != nil {
+		fields = append(fields, user.FieldFollowingCount)
+	}
+	if m.followers_count != nil {
+		fields = append(fields, user.FieldFollowersCount)
+	}
+	if m.tweets_count != nil {
+		fields = append(fields, user.FieldTweetsCount)
 	}
 	return fields
 }
@@ -1313,6 +1499,12 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case user.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case user.FieldFollowingCount:
+		return m.FollowingCount()
+	case user.FieldFollowersCount:
+		return m.FollowersCount()
+	case user.FieldTweetsCount:
+		return m.TweetsCount()
 	}
 	return nil, false
 }
@@ -1332,6 +1524,12 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case user.FieldFollowingCount:
+		return m.OldFollowingCount(ctx)
+	case user.FieldFollowersCount:
+		return m.OldFollowersCount(ctx)
+	case user.FieldTweetsCount:
+		return m.OldTweetsCount(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -1376,6 +1574,27 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
+	case user.FieldFollowingCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFollowingCount(v)
+		return nil
+	case user.FieldFollowersCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFollowersCount(v)
+		return nil
+	case user.FieldTweetsCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTweetsCount(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -1383,13 +1602,31 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented
 // or decremented during this mutation.
 func (m *UserMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addfollowing_count != nil {
+		fields = append(fields, user.FieldFollowingCount)
+	}
+	if m.addfollowers_count != nil {
+		fields = append(fields, user.FieldFollowersCount)
+	}
+	if m.addtweets_count != nil {
+		fields = append(fields, user.FieldTweetsCount)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was in/decremented
 // from a field with the given name. The second value indicates
 // that this field was not set, or was not define in the schema.
 func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case user.FieldFollowingCount:
+		return m.AddedFollowingCount()
+	case user.FieldFollowersCount:
+		return m.AddedFollowersCount()
+	case user.FieldTweetsCount:
+		return m.AddedTweetsCount()
+	}
 	return nil, false
 }
 
@@ -1398,6 +1635,27 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 // type mismatch the field type.
 func (m *UserMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case user.FieldFollowingCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFollowingCount(v)
+		return nil
+	case user.FieldFollowersCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFollowersCount(v)
+		return nil
+	case user.FieldTweetsCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTweetsCount(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
 }
@@ -1440,6 +1698,15 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case user.FieldFollowingCount:
+		m.ResetFollowingCount()
+		return nil
+	case user.FieldFollowersCount:
+		m.ResetFollowersCount()
+		return nil
+	case user.FieldTweetsCount:
+		m.ResetTweetsCount()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

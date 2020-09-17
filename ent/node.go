@@ -163,12 +163,12 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "UpdatedAt",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(u.FollowingCount); err != nil {
+	if buf, err = json.Marshal(u.FollowsCount); err != nil {
 		return nil, err
 	}
 	node.Fields[5] = &Field{
 		Type:  "int",
-		Name:  "FollowingCount",
+		Name:  "FollowsCount",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(u.FollowersCount); err != nil {

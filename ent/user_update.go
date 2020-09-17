@@ -54,24 +54,24 @@ func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
 	return uu
 }
 
-// SetFollowingCount sets the following_count field.
-func (uu *UserUpdate) SetFollowingCount(i int) *UserUpdate {
-	uu.mutation.ResetFollowingCount()
-	uu.mutation.SetFollowingCount(i)
+// SetFollowsCount sets the follows_count field.
+func (uu *UserUpdate) SetFollowsCount(i int) *UserUpdate {
+	uu.mutation.ResetFollowsCount()
+	uu.mutation.SetFollowsCount(i)
 	return uu
 }
 
-// SetNillableFollowingCount sets the following_count field if the given value is not nil.
-func (uu *UserUpdate) SetNillableFollowingCount(i *int) *UserUpdate {
+// SetNillableFollowsCount sets the follows_count field if the given value is not nil.
+func (uu *UserUpdate) SetNillableFollowsCount(i *int) *UserUpdate {
 	if i != nil {
-		uu.SetFollowingCount(*i)
+		uu.SetFollowsCount(*i)
 	}
 	return uu
 }
 
-// AddFollowingCount adds i to following_count.
-func (uu *UserUpdate) AddFollowingCount(i int) *UserUpdate {
-	uu.mutation.AddFollowingCount(i)
+// AddFollowsCount adds i to follows_count.
+func (uu *UserUpdate) AddFollowsCount(i int) *UserUpdate {
+	uu.mutation.AddFollowsCount(i)
 	return uu
 }
 
@@ -344,18 +344,18 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldUpdatedAt,
 		})
 	}
-	if value, ok := uu.mutation.FollowingCount(); ok {
+	if value, ok := uu.mutation.FollowsCount(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: user.FieldFollowingCount,
+			Column: user.FieldFollowsCount,
 		})
 	}
-	if value, ok := uu.mutation.AddedFollowingCount(); ok {
+	if value, ok := uu.mutation.AddedFollowsCount(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: user.FieldFollowingCount,
+			Column: user.FieldFollowsCount,
 		})
 	}
 	if value, ok := uu.mutation.FollowersCount(); ok {
@@ -580,24 +580,24 @@ func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
 	return uuo
 }
 
-// SetFollowingCount sets the following_count field.
-func (uuo *UserUpdateOne) SetFollowingCount(i int) *UserUpdateOne {
-	uuo.mutation.ResetFollowingCount()
-	uuo.mutation.SetFollowingCount(i)
+// SetFollowsCount sets the follows_count field.
+func (uuo *UserUpdateOne) SetFollowsCount(i int) *UserUpdateOne {
+	uuo.mutation.ResetFollowsCount()
+	uuo.mutation.SetFollowsCount(i)
 	return uuo
 }
 
-// SetNillableFollowingCount sets the following_count field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableFollowingCount(i *int) *UserUpdateOne {
+// SetNillableFollowsCount sets the follows_count field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableFollowsCount(i *int) *UserUpdateOne {
 	if i != nil {
-		uuo.SetFollowingCount(*i)
+		uuo.SetFollowsCount(*i)
 	}
 	return uuo
 }
 
-// AddFollowingCount adds i to following_count.
-func (uuo *UserUpdateOne) AddFollowingCount(i int) *UserUpdateOne {
-	uuo.mutation.AddFollowingCount(i)
+// AddFollowsCount adds i to follows_count.
+func (uuo *UserUpdateOne) AddFollowsCount(i int) *UserUpdateOne {
+	uuo.mutation.AddFollowsCount(i)
 	return uuo
 }
 
@@ -868,18 +868,18 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (u *User, err error) {
 			Column: user.FieldUpdatedAt,
 		})
 	}
-	if value, ok := uuo.mutation.FollowingCount(); ok {
+	if value, ok := uuo.mutation.FollowsCount(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: user.FieldFollowingCount,
+			Column: user.FieldFollowsCount,
 		})
 	}
-	if value, ok := uuo.mutation.AddedFollowingCount(); ok {
+	if value, ok := uuo.mutation.AddedFollowsCount(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: user.FieldFollowingCount,
+			Column: user.FieldFollowsCount,
 		})
 	}
 	if value, ok := uuo.mutation.FollowersCount(); ok {

@@ -59,7 +59,7 @@ var (
 		{Name: "password", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "following_count", Type: field.TypeInt},
+		{Name: "follows_count", Type: field.TypeInt},
 		{Name: "followers_count", Type: field.TypeInt},
 		{Name: "tweets_count", Type: field.TypeInt},
 	}

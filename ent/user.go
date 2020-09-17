@@ -26,8 +26,8 @@ type User struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// FollowingCount holds the value of the "following_count" field.
-	FollowingCount int `json:"following_count,omitempty"`
+	// FollowsCount holds the value of the "follows_count" field.
+	FollowsCount int `json:"follows_count,omitempty"`
 	// FollowersCount holds the value of the "followers_count" field.
 	FollowersCount int `json:"followers_count,omitempty"`
 	// TweetsCount holds the value of the "tweets_count" field.
@@ -97,7 +97,7 @@ func (*User) scanValues() []interface{} {
 		&sql.NullString{}, // password
 		&sql.NullTime{},   // created_at
 		&sql.NullTime{},   // updated_at
-		&sql.NullInt64{},  // following_count
+		&sql.NullInt64{},  // follows_count
 		&sql.NullInt64{},  // followers_count
 		&sql.NullInt64{},  // tweets_count
 	}
@@ -141,9 +141,9 @@ func (u *User) assignValues(values ...interface{}) error {
 		u.UpdatedAt = value.Time
 	}
 	if value, ok := values[5].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field following_count", values[5])
+		return fmt.Errorf("unexpected type %T for field follows_count", values[5])
 	} else if value.Valid {
-		u.FollowingCount = int(value.Int64)
+		u.FollowsCount = int(value.Int64)
 	}
 	if value, ok := values[6].(*sql.NullInt64); !ok {
 		return fmt.Errorf("unexpected type %T for field followers_count", values[6])
@@ -211,8 +211,8 @@ func (u *User) String() string {
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")
 	builder.WriteString(u.UpdatedAt.Format(time.ANSIC))
-	builder.WriteString(", following_count=")
-	builder.WriteString(fmt.Sprintf("%v", u.FollowingCount))
+	builder.WriteString(", follows_count=")
+	builder.WriteString(fmt.Sprintf("%v", u.FollowsCount))
 	builder.WriteString(", followers_count=")
 	builder.WriteString(fmt.Sprintf("%v", u.FollowersCount))
 	builder.WriteString(", tweets_count=")

@@ -42,18 +42,55 @@ func (r *mutationResolver) CreateProgram(ctx context.Context, input model.Create
 	return p, nil
 }
 
+/*
+	TODO: #1 A user shouldn't be able to follow themselfs @francismarcus
+	This is also true for unfollowUser
+*/
 func (r *mutationResolver) FollowUser(ctx context.Context, input model.FollowUserInput) (*ent.User, error) {
 	f := r.client.User.UpdateOneID(input.FollowID).AddFollowerIDs(input.UserID).AddFollowersCount(1).SaveX(ctx)
-	r.client.User.UpdateOneID(input.UserID).AddFollowingCount(1).SaveX(ctx)
+	r.client.User.UpdateOneID(input.UserID).AddFollowsCount(1).SaveX(ctx)
 
 	return f, nil
 }
 
+// TODO: #2 A user who is not following the user should not be able to remove following
 func (r *mutationResolver) UnFollowUser(ctx context.Context, input model.UnFollowUserInput) (*ent.User, error) {
 	f := r.client.User.UpdateOneID(input.FollowID).RemoveFollowerIDs(input.UserID).AddFollowersCount(-1).SaveX(ctx)
-	r.client.User.UpdateOneID(input.UserID).AddFollowingCount(-1).SaveX(ctx)
+	r.client.User.UpdateOneID(input.UserID).AddFollowsCount(-1).SaveX(ctx)
 
 	return f, nil
+}
+
+func (r *mutationResolver) LoginUser(ctx context.Context, input model.LoginUserInput) (*model.AuthPayload, error) {
+	u, err := r.client.User.Query().Where(user.Username(input.Username)).Only(ctx)
+	token := "asdasdsa"
+
+	if err != nil {
+		return nil, fmt.Errorf("failed loginUser: %v", err)
+	}
+
+	if u.Password != input.Password {
+		return nil, fmt.Errorf("Wrong password: %v", input.Password)
+	}
+
+	return &model.AuthPayload{
+		User:  u,
+		Token: &token,
+	}, nil
+}
+
+func (r *mutationResolver) SignupUser(ctx context.Context, input model.SignupUserInput) (*model.AuthPayload, error) {
+	u, err := r.client.User.Create().SetUsername(input.Username).SetEmail(input.Email).SetPassword(input.Password).Save(ctx)
+	token := "asdas"
+
+	if err != nil {
+		return nil, fmt.Errorf("failed signupUser: %v", err)
+	}
+
+	return &model.AuthPayload{
+		User:  u,
+		Token: &token,
+	}, nil
 }
 
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
@@ -74,25 +111,19 @@ func (r *queryResolver) Ping(ctx context.Context) (string, error) {
 
 func (r *queryResolver) UsernameAvailable(ctx context.Context, input model.UsernameAvailableInput) (*bool, error) {
 	var b bool
-	u, err := r.client.User.Query().Where(user.Username(input.Username)).All(ctx)
+	u, err := r.client.User.Query().Where(user.Username(input.Username)).Only(ctx)
 
 	if err != nil {
 		b = true
 	}
 
 	if u != nil {
+
 		b = false
+		return &b, fmt.Errorf("Username taken: %v", u)
 	}
 
 	return &b, nil
-}
-
-func (r *queryResolver) LoginUser(ctx context.Context, input model.LoginUserInput) (*model.AuthPayload, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) SignupUser(ctx context.Context, input model.SignupUserInput) (*model.AuthPayload, error) {
-	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.UserConnection, error) {
@@ -101,16 +132,12 @@ func (r *queryResolver) Users(ctx context.Context, after *ent.Cursor, first *int
 		Paginate(ctx, after, first, before, last)
 }
 
+func (r *queryResolver) User(ctx context.Context, input model.ByIDInput) (*ent.User, error) {
+	return r.client.User.Query().Where(user.ID(input.ID)).Only(ctx)
+}
+
 func (r *tweetResolver) User(ctx context.Context, obj *ent.Tweet) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *userResolver) CreatedAt(ctx context.Context, obj *ent.User) (string, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *userResolver) UpdatedAt(ctx context.Context, obj *ent.User) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	return obj.QueryCreator().Only(ctx)
 }
 
 func (r *userResolver) Programs(ctx context.Context, obj *ent.User, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.ProgramConnection, error) {
@@ -126,7 +153,7 @@ func (r *userResolver) Follows(ctx context.Context, obj *ent.User, after *ent.Cu
 }
 
 func (r *userResolver) Tweets(ctx context.Context, obj *ent.User, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.TweetConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	return obj.QueryTweets().Paginate(ctx, after, first, before, last)
 }
 
 // Mutation returns generated.MutationResolver implementation.

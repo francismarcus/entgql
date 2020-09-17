@@ -3,6 +3,7 @@ interface Node {
 }
 
 scalar Cursor
+scalar Time
 
 type PageInfo {
   hasNextPage: Boolean!
@@ -28,8 +29,8 @@ type TweetConnection {
 
 type User implements Node {
   id: ID!
-  created_at: String!
-  updated_at: String!
+  createdAt: Time
+  updatedAt: Time
   email: String!
   username: String!
   programs(
@@ -46,9 +47,9 @@ type User implements Node {
   ): UserConnection
   follows(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
   tweets(after: Cursor, first: Int, before: Cursor, last: Int): TweetConnection
-  followers_count: Int
-  following_count: Int
-  tweets_count: Int
+  followersCount: Int!
+  followsCount: Int!
+  tweetsCount: Int!
 }
 
 type UserEdge {
@@ -117,13 +118,16 @@ input usernameAvailableInput {
   username: String!
 }
 
+input byIDInput {
+  id: ID!
+}
+
 type Query {
   node(id: ID!): Node
   ping: String!
   usernameAvailable(input: usernameAvailableInput!): Boolean
-  loginUser(input: loginUserInput!): AuthPayload
-  signupUser(input: signupUserInput!): AuthPayload
   users(after: Cursor, first: Int, before: Cursor, last: Int): UserConnection
+  user(input: byIDInput!): User
 }
 
 type Mutation {
@@ -131,4 +135,6 @@ type Mutation {
   createProgram(input: createProgramInput!): Program!
   followUser(input: followUserInput!): User
   unFollowUser(input: unFollowUserInput!): User
+  loginUser(input: loginUserInput!): AuthPayload
+  signupUser(input: signupUserInput!): AuthPayload
 }

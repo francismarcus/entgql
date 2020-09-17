@@ -11,6 +11,10 @@ type AuthPayload struct {
 	Token *string   `json:"token"`
 }
 
+type ByIDInput struct {
+	ID int `json:"id"`
+}
+
 type CreateProgramInput struct {
 	Name    string `json:"name"`
 	Creator int    `json:"creator"`

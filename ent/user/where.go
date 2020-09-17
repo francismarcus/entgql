@@ -128,10 +128,10 @@ func UpdatedAt(v time.Time) predicate.User {
 	})
 }
 
-// FollowingCount applies equality check predicate on the "following_count" field. It's identical to FollowingCountEQ.
-func FollowingCount(v int) predicate.User {
+// FollowsCount applies equality check predicate on the "follows_count" field. It's identical to FollowsCountEQ.
+func FollowsCount(v int) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldFollowingCount), v))
+		s.Where(sql.EQ(s.C(FieldFollowsCount), v))
 	})
 }
 
@@ -634,22 +634,22 @@ func UpdatedAtLTE(v time.Time) predicate.User {
 	})
 }
 
-// FollowingCountEQ applies the EQ predicate on the "following_count" field.
-func FollowingCountEQ(v int) predicate.User {
+// FollowsCountEQ applies the EQ predicate on the "follows_count" field.
+func FollowsCountEQ(v int) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldFollowingCount), v))
+		s.Where(sql.EQ(s.C(FieldFollowsCount), v))
 	})
 }
 
-// FollowingCountNEQ applies the NEQ predicate on the "following_count" field.
-func FollowingCountNEQ(v int) predicate.User {
+// FollowsCountNEQ applies the NEQ predicate on the "follows_count" field.
+func FollowsCountNEQ(v int) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldFollowingCount), v))
+		s.Where(sql.NEQ(s.C(FieldFollowsCount), v))
 	})
 }
 
-// FollowingCountIn applies the In predicate on the "following_count" field.
-func FollowingCountIn(vs ...int) predicate.User {
+// FollowsCountIn applies the In predicate on the "follows_count" field.
+func FollowsCountIn(vs ...int) predicate.User {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -661,12 +661,12 @@ func FollowingCountIn(vs ...int) predicate.User {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldFollowingCount), v...))
+		s.Where(sql.In(s.C(FieldFollowsCount), v...))
 	})
 }
 
-// FollowingCountNotIn applies the NotIn predicate on the "following_count" field.
-func FollowingCountNotIn(vs ...int) predicate.User {
+// FollowsCountNotIn applies the NotIn predicate on the "follows_count" field.
+func FollowsCountNotIn(vs ...int) predicate.User {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -678,35 +678,35 @@ func FollowingCountNotIn(vs ...int) predicate.User {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldFollowingCount), v...))
+		s.Where(sql.NotIn(s.C(FieldFollowsCount), v...))
 	})
 }
 
-// FollowingCountGT applies the GT predicate on the "following_count" field.
-func FollowingCountGT(v int) predicate.User {
+// FollowsCountGT applies the GT predicate on the "follows_count" field.
+func FollowsCountGT(v int) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldFollowingCount), v))
+		s.Where(sql.GT(s.C(FieldFollowsCount), v))
 	})
 }
 
-// FollowingCountGTE applies the GTE predicate on the "following_count" field.
-func FollowingCountGTE(v int) predicate.User {
+// FollowsCountGTE applies the GTE predicate on the "follows_count" field.
+func FollowsCountGTE(v int) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldFollowingCount), v))
+		s.Where(sql.GTE(s.C(FieldFollowsCount), v))
 	})
 }
 
-// FollowingCountLT applies the LT predicate on the "following_count" field.
-func FollowingCountLT(v int) predicate.User {
+// FollowsCountLT applies the LT predicate on the "follows_count" field.
+func FollowsCountLT(v int) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldFollowingCount), v))
+		s.Where(sql.LT(s.C(FieldFollowsCount), v))
 	})
 }
 
-// FollowingCountLTE applies the LTE predicate on the "following_count" field.
-func FollowingCountLTE(v int) predicate.User {
+// FollowsCountLTE applies the LTE predicate on the "follows_count" field.
+func FollowsCountLTE(v int) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldFollowingCount), v))
+		s.Where(sql.LTE(s.C(FieldFollowsCount), v))
 	})
 }
 

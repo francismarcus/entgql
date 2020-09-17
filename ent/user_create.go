@@ -68,16 +68,16 @@ func (uc *UserCreate) SetNillableUpdatedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
-// SetFollowingCount sets the following_count field.
-func (uc *UserCreate) SetFollowingCount(i int) *UserCreate {
-	uc.mutation.SetFollowingCount(i)
+// SetFollowsCount sets the follows_count field.
+func (uc *UserCreate) SetFollowsCount(i int) *UserCreate {
+	uc.mutation.SetFollowsCount(i)
 	return uc
 }
 
-// SetNillableFollowingCount sets the following_count field if the given value is not nil.
-func (uc *UserCreate) SetNillableFollowingCount(i *int) *UserCreate {
+// SetNillableFollowsCount sets the follows_count field if the given value is not nil.
+func (uc *UserCreate) SetNillableFollowsCount(i *int) *UserCreate {
 	if i != nil {
-		uc.SetFollowingCount(*i)
+		uc.SetFollowsCount(*i)
 	}
 	return uc
 }
@@ -234,9 +234,9 @@ func (uc *UserCreate) preSave() error {
 		v := user.DefaultUpdatedAt()
 		uc.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := uc.mutation.FollowingCount(); !ok {
-		v := user.DefaultFollowingCount
-		uc.mutation.SetFollowingCount(v)
+	if _, ok := uc.mutation.FollowsCount(); !ok {
+		v := user.DefaultFollowsCount
+		uc.mutation.SetFollowsCount(v)
 	}
 	if _, ok := uc.mutation.FollowersCount(); !ok {
 		v := user.DefaultFollowersCount
@@ -313,13 +313,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		})
 		u.UpdatedAt = value
 	}
-	if value, ok := uc.mutation.FollowingCount(); ok {
+	if value, ok := uc.mutation.FollowsCount(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
 			Value:  value,
-			Column: user.FieldFollowingCount,
+			Column: user.FieldFollowsCount,
 		})
-		u.FollowingCount = value
+		u.FollowsCount = value
 	}
 	if value, ok := uc.mutation.FollowersCount(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
